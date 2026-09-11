@@ -82,7 +82,7 @@ export class EvaluationService {
     let response = await this.invokeProvider(request);
     this.assertStructuralContract(response, evalSheet);
 
-    let rangeErrors = validateScoreRanges(response, evalSheet);
+    const rangeErrors = validateScoreRanges(response, evalSheet);
     let status: EvaluationStatus = 'completed';
 
     if (rangeErrors.length > 0) {

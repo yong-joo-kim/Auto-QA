@@ -10,11 +10,14 @@
     "dev": "pnpm --parallel -r --filter=./apps/* dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "lint": "pnpm -r lint",
+    "lint": "eslint .",
     "import:eval-sheets": "node scripts/import-eval-sheets.js"
   },
   "packageManager": "pnpm@12.3.4",
   "devDependencies": {
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "typescript-eslint": "^8.70.0",
     "xlsx": "^0.18.5"
   }
 }
