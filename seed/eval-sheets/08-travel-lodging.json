@@ -1,0 +1,163 @@
+{
+  "domainId": "travel-lodging",
+  "domainName": "여행·숙박 예약센터",
+  "version": "1.0.0",
+  "mainConsultationTypes": "신규 예약, 예약 변경, 취소·환불, 특이사항(노쇼 등) 처리",
+  "totalMaxScore": 100,
+  "gradeCriteria": [
+    {
+      "minScore": 90,
+      "grade": "우수"
+    },
+    {
+      "minScore": 80,
+      "grade": "양호"
+    },
+    {
+      "minScore": 70,
+      "grade": "보통"
+    },
+    {
+      "minScore": 0,
+      "grade": "미흡"
+    }
+  ],
+  "gatingPolicy": "게이팅(P/F) 항목이 1건이라도 실패(F)이면 총점과 무관하게 전체 결과를 탈락(재검토 필요)으로 판정한다.",
+  "categories": [
+    {
+      "categoryId": "basic-response",
+      "categoryName": "기본응대",
+      "maxScore": 15,
+      "items": [
+        {
+          "itemId": "basic-response-01",
+          "itemName": "첫인사·소속/성명 고지",
+          "criteria": "표준 인사말에 따라 소속과 이름을 명확히 안내했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "basic-response-02",
+          "itemName": "본인확인 절차 수행",
+          "criteria": "규정된 본인확인 절차(성명·생년월일 등)를 정확히 진행했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "basic-response-03",
+          "itemName": "종료 인사 및 추가 문의 안내",
+          "criteria": "상담 종료 시 처리 결과를 요약하고 추가 문의 방법을 안내했는가",
+          "maxScore": 5,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "attitude",
+      "categoryName": "상담태도",
+      "maxScore": 15,
+      "items": [
+        {
+          "itemId": "attitude-01",
+          "itemName": "적극적 경청",
+          "criteria": "고객의 말을 끊지 않고 핵심 요구사항을 정확히 파악했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "attitude-02",
+          "itemName": "공감 표현",
+          "criteria": "고객 상황에 맞는 공감적 언어를 사용했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "attitude-03",
+          "itemName": "어조·속도·언어예절",
+          "criteria": "친절한 어조와 적절한 속도, 존댓말을 유지했는가",
+          "maxScore": 5,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "expertise",
+      "categoryName": "상담전문성",
+      "maxScore": 20,
+      "items": [
+        {
+          "itemId": "expertise-01",
+          "itemName": "상품·일정 정보 정확성",
+          "criteria": "여행상품·숙박 옵션·일정을 정확히 안내했는가",
+          "maxScore": 10,
+          "gating": false
+        },
+        {
+          "itemId": "expertise-02",
+          "itemName": "공급사 정책 이해 정확성",
+          "criteria": "항공사·숙박업체 등 공급사별 정책 차이를 정확히 이해하고 안내했는가",
+          "maxScore": 10,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "efficiency",
+      "categoryName": "처리효율",
+      "maxScore": 20,
+      "items": [
+        {
+          "itemId": "efficiency-01",
+          "itemName": "평균처리시간(AHT) 준수",
+          "criteria": "표준 처리시간 내 상담을 완결했는가",
+          "maxScore": 10,
+          "gating": false
+        },
+        {
+          "itemId": "efficiency-02",
+          "itemName": "시스템 입력·기록 정확성",
+          "criteria": "예약 변경·취소 이력을 정확히 기록했는가",
+          "maxScore": 10,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "compliance",
+      "categoryName": "컴플라이언스",
+      "maxScore": 30,
+      "items": [
+        {
+          "itemId": "compliance-01",
+          "itemName": "취소·환불 위약금 규정 안내",
+          "criteria": "소비자분쟁해결기준에 따른 위약금 규정을 정확히 안내했는가",
+          "maxScore": 8,
+          "gating": true
+        },
+        {
+          "itemId": "compliance-02",
+          "itemName": "예약 변경/노쇼 정책 안내",
+          "criteria": "변경 수수료 및 노쇼 처리 정책을 명확히 안내했는가",
+          "maxScore": 8,
+          "gating": false
+        },
+        {
+          "itemId": "compliance-03",
+          "itemName": "자사·공급사 정책 구분 안내",
+          "criteria": "자사 정책과 항공/숙박 공급사 정책을 구분하여 오안내를 방지했는가",
+          "maxScore": 7,
+          "gating": false
+        },
+        {
+          "itemId": "compliance-04",
+          "itemName": "결제 취소 처리 정확성",
+          "criteria": "결제 취소·환불 처리를 규정대로 정확히 수행했는가",
+          "maxScore": 7,
+          "gating": false
+        }
+      ]
+    }
+  ],
+  "sourceCitation": "출처(컴플라이언스 항목 근거): 한국소비자원, \"온라인 플랫폼 숙박 계약 주의보\"; 찾기쉬운 생활법령정보, \"숙박시설 예약 취소\"",
+  "disclaimer": "※ 배점 및 가중치는 참고용 설계 예시이며[가정], 사내 최신 규정·법령 개정사항을 반영하여 조정 후 사용하시기 바랍니다."
+}

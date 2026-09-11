@@ -1,0 +1,163 @@
+{
+  "domainId": "ecommerce-retail",
+  "domainName": "이커머스·유통",
+  "version": "1.0.0",
+  "mainConsultationTypes": "주문/배송 문의, 교환·반품·환불, 상품 정보 문의, 클레임 처리",
+  "totalMaxScore": 100,
+  "gradeCriteria": [
+    {
+      "minScore": 90,
+      "grade": "우수"
+    },
+    {
+      "minScore": 80,
+      "grade": "양호"
+    },
+    {
+      "minScore": 70,
+      "grade": "보통"
+    },
+    {
+      "minScore": 0,
+      "grade": "미흡"
+    }
+  ],
+  "gatingPolicy": "게이팅(P/F) 항목이 1건이라도 실패(F)이면 총점과 무관하게 전체 결과를 탈락(재검토 필요)으로 판정한다.",
+  "categories": [
+    {
+      "categoryId": "basic-response",
+      "categoryName": "기본응대",
+      "maxScore": 15,
+      "items": [
+        {
+          "itemId": "basic-response-01",
+          "itemName": "첫인사·소속/성명 고지",
+          "criteria": "표준 인사말에 따라 소속과 이름을 명확히 안내했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "basic-response-02",
+          "itemName": "본인확인 절차 수행",
+          "criteria": "규정된 본인확인 절차(성명·생년월일 등)를 정확히 진행했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "basic-response-03",
+          "itemName": "종료 인사 및 추가 문의 안내",
+          "criteria": "상담 종료 시 처리 결과를 요약하고 추가 문의 방법을 안내했는가",
+          "maxScore": 5,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "attitude",
+      "categoryName": "상담태도",
+      "maxScore": 15,
+      "items": [
+        {
+          "itemId": "attitude-01",
+          "itemName": "적극적 경청",
+          "criteria": "고객의 말을 끊지 않고 핵심 요구사항을 정확히 파악했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "attitude-02",
+          "itemName": "공감 표현",
+          "criteria": "고객 상황에 맞는 공감적 언어를 사용했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "attitude-03",
+          "itemName": "어조·속도·언어예절",
+          "criteria": "친절한 어조와 적절한 속도, 존댓말을 유지했는가",
+          "maxScore": 5,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "expertise",
+      "categoryName": "상담전문성",
+      "maxScore": 20,
+      "items": [
+        {
+          "itemId": "expertise-01",
+          "itemName": "상품·배송 정보 정확성",
+          "criteria": "상품 옵션·배송 상태를 정확히 조회하여 안내했는가",
+          "maxScore": 10,
+          "gating": false
+        },
+        {
+          "itemId": "expertise-02",
+          "itemName": "클레임 원인 파악 정확성",
+          "criteria": "불만 사항의 근본 원인을 정확히 파악했는가",
+          "maxScore": 10,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "efficiency",
+      "categoryName": "처리효율",
+      "maxScore": 20,
+      "items": [
+        {
+          "itemId": "efficiency-01",
+          "itemName": "평균처리시간(AHT) 준수",
+          "criteria": "표준 처리시간 내 상담을 완결했는가",
+          "maxScore": 10,
+          "gating": false
+        },
+        {
+          "itemId": "efficiency-02",
+          "itemName": "시스템 입력·기록 정확성",
+          "criteria": "교환/반품/환불 처리 이력을 정확히 기록했는가",
+          "maxScore": 10,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "compliance",
+      "categoryName": "컴플라이언스",
+      "maxScore": 30,
+      "items": [
+        {
+          "itemId": "compliance-01",
+          "itemName": "청약철회(반품/환불) 기한·절차 안내",
+          "criteria": "전자상거래법상 청약철회 기한과 절차를 정확히 안내했는가",
+          "maxScore": 8,
+          "gating": true
+        },
+        {
+          "itemId": "compliance-02",
+          "itemName": "교환/반품 프로세스 준수",
+          "criteria": "상품 상태 확인 등 정해진 처리 프로세스를 준수했는가",
+          "maxScore": 8,
+          "gating": false
+        },
+        {
+          "itemId": "compliance-03",
+          "itemName": "결제·환불 처리 정확성",
+          "criteria": "환불 금액과 처리 방식을 오류 없이 처리했는가",
+          "maxScore": 7,
+          "gating": false
+        },
+        {
+          "itemId": "compliance-04",
+          "itemName": "허위·과장 상품정보 정정 안내",
+          "criteria": "상품 페이지 오류 등을 인지하고 정정 안내했는가",
+          "maxScore": 7,
+          "gating": false
+        }
+      ]
+    }
+  ],
+  "sourceCitation": "출처(컴플라이언스 항목 근거): 찾기쉬운 생활법령정보, 전자상거래 등에서의 소비자보호에 관한 법률(청약철회) 관련 안내",
+  "disclaimer": "※ 배점 및 가중치는 참고용 설계 예시이며[가정], 사내 최신 규정·법령 개정사항을 반영하여 조정 후 사용하시기 바랍니다."
+}

@@ -1,0 +1,27 @@
+node_modules/
+dist/
+build/
+coverage/
+*.log
+.env
+.env.local
+.env.*.local
+.DS_Store
+Thumbs.db
+*.sqlite
+*.sqlite-journal
+*.db
+*.db-journal
+*.tsbuildinfo
+/apps/*/node_modules
+/packages/*/node_modules
+.turbo/
+.pnpm-store/
+
+# 사내 원본 평가시트 Excel (민감/내부자료 - 변환된 JSON만 버전관리)
+/docs/source-sheets/
+~$*.xlsx
+~$*.docx
+
+# 사내 참고 매뉴얼 원본 (민감/내부자료)
+/docs/references/

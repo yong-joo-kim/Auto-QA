@@ -1,0 +1,163 @@
+{
+  "domainId": "insurance",
+  "domainName": "보험",
+  "version": "1.0.0",
+  "mainConsultationTypes": "신규가입 상담, 보장내용 문의, 보험금 청구, 해지·환급 문의",
+  "totalMaxScore": 100,
+  "gradeCriteria": [
+    {
+      "minScore": 90,
+      "grade": "우수"
+    },
+    {
+      "minScore": 80,
+      "grade": "양호"
+    },
+    {
+      "minScore": 70,
+      "grade": "보통"
+    },
+    {
+      "minScore": 0,
+      "grade": "미흡"
+    }
+  ],
+  "gatingPolicy": "게이팅(P/F) 항목이 1건이라도 실패(F)이면 총점과 무관하게 전체 결과를 탈락(재검토 필요)으로 판정한다.",
+  "categories": [
+    {
+      "categoryId": "basic-response",
+      "categoryName": "기본응대",
+      "maxScore": 15,
+      "items": [
+        {
+          "itemId": "basic-response-01",
+          "itemName": "첫인사·소속/성명 고지",
+          "criteria": "표준 인사말에 따라 소속과 이름을 명확히 안내했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "basic-response-02",
+          "itemName": "본인확인 절차 수행",
+          "criteria": "규정된 본인확인 절차(성명·생년월일 등)를 정확히 진행했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "basic-response-03",
+          "itemName": "종료 인사 및 추가 문의 안내",
+          "criteria": "상담 종료 시 처리 결과를 요약하고 추가 문의 방법을 안내했는가",
+          "maxScore": 5,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "attitude",
+      "categoryName": "상담태도",
+      "maxScore": 15,
+      "items": [
+        {
+          "itemId": "attitude-01",
+          "itemName": "적극적 경청",
+          "criteria": "고객의 말을 끊지 않고 핵심 요구사항을 정확히 파악했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "attitude-02",
+          "itemName": "공감 표현",
+          "criteria": "고객 상황에 맞는 공감적 언어를 사용했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "attitude-03",
+          "itemName": "어조·속도·언어예절",
+          "criteria": "친절한 어조와 적절한 속도, 존댓말을 유지했는가",
+          "maxScore": 5,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "expertise",
+      "categoryName": "상담전문성",
+      "maxScore": 20,
+      "items": [
+        {
+          "itemId": "expertise-01",
+          "itemName": "보장내용·특약 설명 정확성",
+          "criteria": "가입 상품의 보장범위·특약을 정확히 설명했는가",
+          "maxScore": 10,
+          "gating": false
+        },
+        {
+          "itemId": "expertise-02",
+          "itemName": "청구·심사 절차 안내 정확성",
+          "criteria": "보험금 청구 서류·절차를 정확히 안내했는가",
+          "maxScore": 10,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "efficiency",
+      "categoryName": "처리효율",
+      "maxScore": 20,
+      "items": [
+        {
+          "itemId": "efficiency-01",
+          "itemName": "평균처리시간(AHT) 준수",
+          "criteria": "표준 처리시간 내 상담을 완결했는가",
+          "maxScore": 10,
+          "gating": false
+        },
+        {
+          "itemId": "efficiency-02",
+          "itemName": "시스템 입력·기록 정확성",
+          "criteria": "상담 이력을 정확히 기록했는가",
+          "maxScore": 10,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "compliance",
+      "categoryName": "컴플라이언스",
+      "maxScore": 30,
+      "items": [
+        {
+          "itemId": "compliance-01",
+          "itemName": "완전판매 3대 기본지키기 이행",
+          "criteria": "자필서명, 청약서 부본전달, 약관 및 상품설명서 전달 여부를 확인했는가",
+          "maxScore": 10,
+          "gating": true
+        },
+        {
+          "itemId": "compliance-02",
+          "itemName": "해피콜(완전판매 모니터링) 대상 안내",
+          "criteria": "모니터링콜 대상 여부와 절차를 고객에게 안내했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "compliance-03",
+          "itemName": "면책사항·해지환급금 정확 설명",
+          "criteria": "면책조항과 해지 시 환급금 산정 기준을 명확히 설명했는가",
+          "maxScore": 8,
+          "gating": false
+        },
+        {
+          "itemId": "compliance-04",
+          "itemName": "불완전판매(과장·허위 설명) 금지",
+          "criteria": "보장내용을 과장하거나 불리한 조건을 누락하지 않았는가",
+          "maxScore": 7,
+          "gating": true
+        }
+      ]
+    }
+  ],
+  "sourceCitation": "출처(컴플라이언스 항목 근거): 한국경제, \"보험 3대 기본지키기\"; KB손해보험, \"완전판매 모니터링\"",
+  "disclaimer": "※ 배점 및 가중치는 참고용 설계 예시이며[가정], 사내 최신 규정·법령 개정사항을 반영하여 조정 후 사용하시기 바랍니다."
+}

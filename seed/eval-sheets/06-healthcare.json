@@ -1,0 +1,163 @@
+{
+  "domainId": "healthcare",
+  "domainName": "의료·헬스케어",
+  "version": "1.0.0",
+  "mainConsultationTypes": "진료예약·변경·취소, 진료과·의료진 안내, 검사결과 문의, 응급 문의",
+  "totalMaxScore": 100,
+  "gradeCriteria": [
+    {
+      "minScore": 90,
+      "grade": "우수"
+    },
+    {
+      "minScore": 80,
+      "grade": "양호"
+    },
+    {
+      "minScore": 70,
+      "grade": "보통"
+    },
+    {
+      "minScore": 0,
+      "grade": "미흡"
+    }
+  ],
+  "gatingPolicy": "게이팅(P/F) 항목이 1건이라도 실패(F)이면 총점과 무관하게 전체 결과를 탈락(재검토 필요)으로 판정한다.",
+  "categories": [
+    {
+      "categoryId": "basic-response",
+      "categoryName": "기본응대",
+      "maxScore": 15,
+      "items": [
+        {
+          "itemId": "basic-response-01",
+          "itemName": "첫인사·소속/성명 고지",
+          "criteria": "표준 인사말에 따라 소속과 이름을 명확히 안내했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "basic-response-02",
+          "itemName": "본인확인 절차 수행",
+          "criteria": "규정된 본인확인 절차(성명·생년월일 등)를 정확히 진행했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "basic-response-03",
+          "itemName": "종료 인사 및 추가 문의 안내",
+          "criteria": "상담 종료 시 처리 결과를 요약하고 추가 문의 방법을 안내했는가",
+          "maxScore": 5,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "attitude",
+      "categoryName": "상담태도",
+      "maxScore": 15,
+      "items": [
+        {
+          "itemId": "attitude-01",
+          "itemName": "적극적 경청",
+          "criteria": "고객의 말을 끊지 않고 핵심 요구사항을 정확히 파악했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "attitude-02",
+          "itemName": "공감 표현",
+          "criteria": "고객 상황에 맞는 공감적 언어를 사용했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "attitude-03",
+          "itemName": "어조·속도·언어예절",
+          "criteria": "친절한 어조와 적절한 속도, 존댓말을 유지했는가",
+          "maxScore": 5,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "expertise",
+      "categoryName": "상담전문성",
+      "maxScore": 20,
+      "items": [
+        {
+          "itemId": "expertise-01",
+          "itemName": "예약·진료 절차 안내 정확성",
+          "criteria": "진료과별 예약·접수 절차를 정확히 안내했는가",
+          "maxScore": 10,
+          "gating": false
+        },
+        {
+          "itemId": "expertise-02",
+          "itemName": "안내 범위 준수(의학적 판단 배제)",
+          "criteria": "의료진이 아닌 상담사로서 의학적 소견을 임의 판단하지 않았는가",
+          "maxScore": 10,
+          "gating": true
+        }
+      ]
+    },
+    {
+      "categoryId": "efficiency",
+      "categoryName": "처리효율",
+      "maxScore": 20,
+      "items": [
+        {
+          "itemId": "efficiency-01",
+          "itemName": "평균처리시간(AHT) 준수",
+          "criteria": "표준 처리시간 내 상담을 완결했는가",
+          "maxScore": 10,
+          "gating": false
+        },
+        {
+          "itemId": "efficiency-02",
+          "itemName": "시스템 입력·기록 정확성",
+          "criteria": "예약 변경·취소 이력을 정확히 기록했는가",
+          "maxScore": 10,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "compliance",
+      "categoryName": "컴플라이언스",
+      "maxScore": 30,
+      "items": [
+        {
+          "itemId": "compliance-01",
+          "itemName": "본인확인 후 진료정보 안내",
+          "criteria": "개인정보보호법·의료법에 따라 본인확인 후 정보를 안내했는가",
+          "maxScore": 10,
+          "gating": true
+        },
+        {
+          "itemId": "compliance-02",
+          "itemName": "예약/변경/취소 절차 정확 안내",
+          "criteria": "예약 변경·취소 관련 정책을 정확히 안내했는가",
+          "maxScore": 8,
+          "gating": false
+        },
+        {
+          "itemId": "compliance-03",
+          "itemName": "진료과·의료진 정보 정확 안내",
+          "criteria": "진료과 및 의료진 정보를 오류 없이 안내했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "compliance-04",
+          "itemName": "응급상황 안내 프로토콜 준수",
+          "criteria": "응급 의심 문의 시 정해진 안내 프로토콜(응급실 안내 등)을 따랐는가",
+          "maxScore": 7,
+          "gating": true
+        }
+      ]
+    }
+  ],
+  "sourceCitation": "출처(컴플라이언스 항목 근거): 개인정보보호법·의료법상 본인확인 원칙(일반 원칙); 주요 병원 고객서비스 안내 페이지 종합",
+  "disclaimer": "※ 배점 및 가중치는 참고용 설계 예시이며[가정], 사내 최신 규정·법령 개정사항을 반영하여 조정 후 사용하시기 바랍니다."
+}

@@ -1,0 +1,20 @@
+{
+  "name": "auto-qa",
+  "private": true,
+  "version": "0.0.0",
+  "description": "콜센터 상담대화 자동평가(Auto QA) 시스템 모노레포",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel -r --filter=./apps/* dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "import:eval-sheets": "node scripts/import-eval-sheets.js"
+  },
+  "packageManager": "pnpm@12.3.4",
+  "devDependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

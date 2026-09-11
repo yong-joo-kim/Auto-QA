@@ -1,0 +1,163 @@
+{
+  "domainId": "delivery-o2o",
+  "domainName": "배달·O2O",
+  "version": "1.0.0",
+  "mainConsultationTypes": "배달지연 문의, 오배달·누락, 환불·보상 요청, 라이더/업체 컴플레인",
+  "totalMaxScore": 100,
+  "gradeCriteria": [
+    {
+      "minScore": 90,
+      "grade": "우수"
+    },
+    {
+      "minScore": 80,
+      "grade": "양호"
+    },
+    {
+      "minScore": 70,
+      "grade": "보통"
+    },
+    {
+      "minScore": 0,
+      "grade": "미흡"
+    }
+  ],
+  "gatingPolicy": "게이팅(P/F) 항목이 1건이라도 실패(F)이면 총점과 무관하게 전체 결과를 탈락(재검토 필요)으로 판정한다.",
+  "categories": [
+    {
+      "categoryId": "basic-response",
+      "categoryName": "기본응대",
+      "maxScore": 15,
+      "items": [
+        {
+          "itemId": "basic-response-01",
+          "itemName": "첫인사·소속/성명 고지",
+          "criteria": "표준 인사말에 따라 소속과 이름을 명확히 안내했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "basic-response-02",
+          "itemName": "본인확인 절차 수행",
+          "criteria": "규정된 본인확인 절차(성명·생년월일 등)를 정확히 진행했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "basic-response-03",
+          "itemName": "종료 인사 및 추가 문의 안내",
+          "criteria": "상담 종료 시 처리 결과를 요약하고 추가 문의 방법을 안내했는가",
+          "maxScore": 5,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "attitude",
+      "categoryName": "상담태도",
+      "maxScore": 15,
+      "items": [
+        {
+          "itemId": "attitude-01",
+          "itemName": "적극적 경청",
+          "criteria": "고객의 말을 끊지 않고 핵심 요구사항을 정확히 파악했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "attitude-02",
+          "itemName": "공감 표현",
+          "criteria": "고객 상황에 맞는 공감적 언어를 사용했는가",
+          "maxScore": 5,
+          "gating": false
+        },
+        {
+          "itemId": "attitude-03",
+          "itemName": "어조·속도·언어예절",
+          "criteria": "친절한 어조와 적절한 속도, 존댓말을 유지했는가",
+          "maxScore": 5,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "expertise",
+      "categoryName": "상담전문성",
+      "maxScore": 20,
+      "items": [
+        {
+          "itemId": "expertise-01",
+          "itemName": "주문·배달 상태 조회 정확성",
+          "criteria": "주문·배달 현황을 정확히 조회하여 안내했는가",
+          "maxScore": 10,
+          "gating": false
+        },
+        {
+          "itemId": "expertise-02",
+          "itemName": "귀책사유 판단 정확성",
+          "criteria": "지연·오배달 등의 귀책사유(업체/라이더/플랫폼)를 정확히 판단했는가",
+          "maxScore": 10,
+          "gating": true
+        }
+      ]
+    },
+    {
+      "categoryId": "efficiency",
+      "categoryName": "처리효율",
+      "maxScore": 20,
+      "items": [
+        {
+          "itemId": "efficiency-01",
+          "itemName": "평균처리시간(AHT) 준수",
+          "criteria": "표준 처리시간 내 상담을 완결했는가",
+          "maxScore": 10,
+          "gating": false
+        },
+        {
+          "itemId": "efficiency-02",
+          "itemName": "시스템 입력·기록 정확성",
+          "criteria": "보상·환불 처리 이력을 정확히 기록했는가",
+          "maxScore": 10,
+          "gating": false
+        }
+      ]
+    },
+    {
+      "categoryId": "compliance",
+      "categoryName": "컴플라이언스",
+      "maxScore": 30,
+      "items": [
+        {
+          "itemId": "compliance-01",
+          "itemName": "배달지연·오배달 보상정책 정확 안내",
+          "criteria": "환불·포인트 보상 등 정해진 보상 기준을 정확히 안내했는가",
+          "maxScore": 8,
+          "gating": false
+        },
+        {
+          "itemId": "compliance-02",
+          "itemName": "업체·라이더 귀책 구분 안내",
+          "criteria": "귀책 주체에 따라 처리 방식이 다름을 명확히 구분해 안내했는가",
+          "maxScore": 8,
+          "gating": true
+        },
+        {
+          "itemId": "compliance-03",
+          "itemName": "안전사고·컴플레인 접수 절차 준수",
+          "criteria": "라이더 안전사고 등 중대 이슈는 정해진 접수·이관 절차를 따랐는가",
+          "maxScore": 7,
+          "gating": true
+        },
+        {
+          "itemId": "compliance-04",
+          "itemName": "결제·환불 처리 정확성",
+          "criteria": "환불 금액과 처리 방식을 오류 없이 처리했는가",
+          "maxScore": 7,
+          "gating": false
+        }
+      ]
+    }
+  ],
+  "sourceCitation": "출처(컴플라이언스 항목 근거): 업계 공개 자료(배달앱 고객센터 운영 사례) 종합 — 세부 보상 기준은 플랫폼별 상이 [가정]",
+  "disclaimer": "※ 배점 및 가중치는 참고용 설계 예시이며[가정], 사내 최신 규정·법령 개정사항을 반영하여 조정 후 사용하시기 바랍니다."
+}
