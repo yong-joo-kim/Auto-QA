@@ -59,7 +59,7 @@ PM(메인 세션)은 별도 서브에이전트 파일 없이 이 문서와 `.cla
 - 평가시트/트랜스크립트 원문은 절대 git에 커밋하지 않는다 (`seed/eval-sheets/*.json`의 **샘플** 데이터만 예외).
 - `ANTHROPIC_API_KEY`는 `.env`로만 관리, `.env`는 git 추적 제외. `.env.example`에 플레이스홀더만 유지.
 - 트랜스크립트 원문은 PII 마스킹 후에만 LLM 전송 및 저장한다. 원문을 영구 저장하지 않는다(기본 정책).
-- **LLM Provider는 추상화되어 있다** (`LlmEvaluationProvider` 인터페이스). 실제 API 키가 아직 없으므로 기본값은 `mock` 프로바이더(결정론적 더미 채점 응답)이며, env `LLM_PROVIDER=mock|anthropic|gemini`로 전환한다. `anthropic`은 `claude-sonnet-5`(env `ANTHROPIC_MODEL`)/분류용 `claude-haiku-4-5-20251001`, `gemini`는 추후 Google AI Studio 키 확보 시 연동. 세 프로바이더 모두 동일한 구조화 출력 스키마(§`docs/architecture/eval-sheet-schema.md`)를 반환해야 한다.
+- **LLM Provider는 추상화되어 있다** (`LlmEvaluationProvider` 인터페이스). 기본값은 여전히 `mock` 프로바이더(결정론적 더미 채점 응답, CI/기본 개발 환경 유지)이며, env `LLM_PROVIDER=mock|anthropic|gemini`로 전환한다. `gemini`는 **연동 완료**(`docs/requirements/gemini-llm-provider.md`, `docs/decisions/ADR-001-gemini-llm-provider.md` 참조) — Google Gemini REST API를 실호출하며 기본 모델은 env `GEMINI_MODEL`(필수, 미설정 시 기동 실패)로 지정한다. `anthropic`은 아직 스텁이며(`claude-sonnet-5`, env `ANTHROPIC_MODEL`/분류용 `claude-haiku-4-5-20251001` 예정), Gemini 구현이 세운 재시도/타임아웃/에러 매핑 패턴(`apps/api/src/evaluation/llm/http-retry.ts`)을 재사용해 별도 작업으로 구현한다. 세 프로바이더 모두 동일한 구조화 출력 계약(§`docs/architecture/eval-sheet-schema.md`)을 반환해야 하며, 방언별 스키마 변환은 프로바이더 계층(`schema-builder.ts` / `gemini-schema-builder.ts`)에서 흡수한다.
 - **비밀키 취급 주의**: API 키는 절대 채팅/커밋 메시지/로그에 평문으로 남기지 않는다. 사용자가 실수로 채팅에 붙여넣은 키는 노출된 것으로 간주하고 재발급을 권고한다.
 
 ## 단계별 전개 (Phase)
