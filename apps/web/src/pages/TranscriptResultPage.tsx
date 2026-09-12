@@ -162,6 +162,7 @@ export function TranscriptResultPage() {
               llmModel={result.llmModel}
               sourceCitation={result.sourceCitation}
               disclaimer={result.disclaimer}
+              maskingSummary={result.maskingSummary}
             />
           </div>
         )}

@@ -116,6 +116,15 @@ export interface FailedGatingItem {
   reason: string;
 }
 
+/**
+ * PII 마스킹 종류(Phase 3 FR-4, `packages/pii-mask`의 `PiiKind`와 동일한 5종을 유지한다).
+ * shared-types는 pii-mask 패키지에 의존하지 않으므로 값 집합을 여기 독립적으로 선언한다.
+ */
+export type PiiKind = 'rrn' | 'phone' | 'card' | 'account' | 'email';
+
+/** 마스킹 종류별 탐지 건수(원문 조각은 포함하지 않음, FR-4.2). */
+export type MaskingSummary = Record<PiiKind, number>;
+
 /** GET /transcripts/:id 응답 바디 (요구사항 §4.4 저장 스키마 + UI 설계서 §3.2 표시용 확장) */
 export interface EvaluationResultResponse {
   id: string;
@@ -140,6 +149,12 @@ export interface EvaluationResultResponse {
   sourceCitation?: string;
   disclaimer?: string;
   createdAt: string;
+  /**
+   * PII 마스킹 종류별 탐지 건수(Phase 3 FR-4). Phase 3 이전에 저장된 레거시 레코드는
+   * 집계 자체가 없으므로 `null`이 내려간다(원문을 저장하지 않아 소급 재계산이 불가능하다,
+   * §9 Out of scope).
+   */
+  maskingSummary?: MaskingSummary | null;
 }
 
 export interface ApiErrorResponse {

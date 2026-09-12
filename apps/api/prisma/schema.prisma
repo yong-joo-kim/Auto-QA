@@ -21,6 +21,9 @@ model Transcript {
   maskedText String
   // JSON 직렬화된 TranscriptMetadata, 없으면 null
   metadata   String?
+  // Phase 3 FR-4: JSON 직렬화된 MaskingSummary(Record<PiiKind, number>). 원문 조각은
+  // 포함하지 않고 종류별 건수만 담는다. Phase 3 이전 저장분은 null(레거시, 소급 계산 불가).
+  maskingSummary String?
   createdAt  DateTime    @default(now())
   evaluation Evaluation?
 

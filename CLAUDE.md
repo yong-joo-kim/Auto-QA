@@ -46,6 +46,15 @@ PM(메인 세션)은 별도 서브에이전트 파일 없이 이 문서와 `.cla
 
 ## 컨벤션
 
+### 기술 문서 작성 형식 (`docs/**/*.md` 전체 — requirements-analyst/ui-designer/code-reviewer 등 문서 산출물에 적용)
+
+- 인코딩: UTF-8
+- 문법: GitHub Flavored Markdown (GFM)
+- 표: 셀 내부에 줄바꿈(`<br>`, 개행문자)을 넣지 않는다. 각 셀은 한 줄로 작성하고, 열 너비는 균등하게 맞춘다(파이프 정렬).
+- 다이어그램: Mermaid 코드 블록(```mermaid)으로 작성한다. 동일한 다이어그램을 PNG로도 별도 저장한다(파일명은 원본 문서와 같은 디렉터리에 `<문서명>-<다이어그램식별자>.png`). 렌더링은 `@mermaid-js/mermaid-cli`(`mmdc`, `npx puppeteer browsers install chrome-headless-shell`로 브라우저 선설치 필요)를 우선 시도하되, 이 Windows 개발 환경에서는 puppeteer가 로컬 Chrome DevTools Protocol 연결에서 `Network.enable timed out`으로 멎는 경우가 있었다. 이 경우 `https://mermaid.ink/img/{mermaid 소스의 base64url 인코딩}?type=png&bgColor=white`(공개 렌더링 서비스)로 폴백한다 — 다이어그램 소스는 민감정보를 포함하지 않으므로 외부 전송이 허용된다.
+- 줄바꿈: LF(유닉스 스타일). CRLF로 저장하지 않는다.
+- 파일 확장자: `.md`
+
 - 커밋은 Conventional Commits 형식(`feat:`, `fix:`, `docs:`, `test:`, `chore:` 등), 사용자 명시적 요청 시에만 생성.
 - 평가시트/트랜스크립트 원문은 절대 git에 커밋하지 않는다 (`seed/eval-sheets/*.json`의 **샘플** 데이터만 예외).
 - `ANTHROPIC_API_KEY`는 `.env`로만 관리, `.env`는 git 추적 제외. `.env.example`에 플레이스홀더만 유지.

@@ -132,7 +132,7 @@ TranscriptResultPage (컨테이너, :id로 GET 요청)
 │     (basic-response → attitude → expertise → efficiency → compliance)
 │     └── ItemDetailSection × 5 (카테고리 1개당 1섹션)
 │           props: { categoryId, categoryName, categoryScore, categoryMaxScore, items }
-│           └── ItemDetailRow × N (섹션 내 항목 수만큼, 13건 합계)
+│           └── ItemDetailRow × N (섹션 내 항목 수만큼, 통신 기준 14건 합계)
 │                 props: {
 │                   itemId, itemName, criteria?,
 │                   score: number, maxScore: number,

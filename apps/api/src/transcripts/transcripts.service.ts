@@ -13,6 +13,7 @@ import {
   Grade,
   GatingResult,
   LlmProviderId,
+  MaskingSummary,
   MIN_TRANSCRIPT_NON_WHITESPACE_LENGTH,
   OverrideItemScoreRequest,
 } from '@auto-qa/shared-types';
@@ -37,7 +38,9 @@ export class TranscriptsService {
 
     // rawText는 마스킹 직후 이 함수 스코프 밖에서 참조되지 않는다.
     // 이후 단계(LLM 요청/DB 저장/로그)에서는 오직 maskedText만 사용한다(NFR-1.1/1.2).
-    const { maskedText } = maskPii(dto.rawText);
+    // Phase 3 FR-4: counts(종류별 탐지 건수)를 버리지 않고 maskingSummary로 저장한다.
+    // 원문 조각은 포함하지 않고 건수만 담는다(FR-4.2).
+    const { maskedText, counts: maskingSummary } = maskPii(dto.rawText);
 
     const aggregation = await this.evaluationService.evaluateAndAggregate(
       dto.domainId,
@@ -53,6 +56,7 @@ export class TranscriptsService {
           domainId: dto.domainId,
           maskedText,
           metadata: dto.metadata ? JSON.stringify(dto.metadata) : null,
+          maskingSummary: JSON.stringify(maskingSummary),
         },
       });
 
@@ -112,10 +116,15 @@ export class TranscriptsService {
   }
 
   private toResponse(
-    transcript: { id: string; domainId: string },
+    transcript: { id: string; domainId: string; maskingSummary?: string | null },
     evaluation: Evaluation,
   ): EvaluationResultResponse {
     const evalSheet = this.evalSheets.getSheet(transcript.domainId);
+    // Phase 3 FR-4: 레거시 레코드(Phase 3 이전 저장분, 컬럼 자체가 없던 시절)는
+    // maskingSummary가 없으므로 null을 그대로 내려보낸다(§9 Out of scope: 소급 재계산 불가).
+    // L-4: 컬럼 값이 손상되어 JSON.parse가 실패하더라도(예: 수동 DB 조작) 결과 조회 API 전체가
+    // 500 에러로 죽지 않도록 방어한다 — 파싱 실패 시 "정보 없음"과 동일하게 null로 처리한다.
+    const maskingSummary: MaskingSummary | null = this.parseMaskingSummary(transcript.maskingSummary);
 
     return {
       id: evaluation.id,
@@ -140,6 +149,7 @@ export class TranscriptsService {
       sourceCitation: evalSheet.sourceCitation,
       disclaimer: evalSheet.disclaimer,
       createdAt: evaluation.createdAt.toISOString(),
+      maskingSummary,
     };
   }
 
@@ -217,6 +227,17 @@ export class TranscriptsService {
     });
 
     return this.getResultByEvaluationId(evaluationId);
+  }
+
+  /** L-4: `maskingSummary` 컬럼 값을 안전하게 역직렬화한다. 값이 없거나(레거시 레코드) JSON
+   * 파싱이 실패하면(컬럼 손상) null을 반환한다 — 결과 조회 API가 500으로 실패하지 않게 한다. */
+  private parseMaskingSummary(raw: string | null | undefined): MaskingSummary | null {
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as MaskingSummary;
+    } catch {
+      return null;
+    }
   }
 
   /** domainId에 대응하는 평가시트를 로드한다. 존재하지 않는 domainId는 400으로 거부한다(FR-11.4). */
