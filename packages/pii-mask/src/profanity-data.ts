@@ -84,5 +84,11 @@ export const NORMAL_WORD_ALLOWLIST: readonly string[] = [];
  * 없어 이 목록도 현재는 도달 불가(dead code)다. "강아지 새끼를 키워요"가 미탐지되는 것은
  * 이 예외 처리 덕분이 아니라 "새끼"가 애초에 어간이 아니기 때문이다. 구조는 유지하되(향후
  * "새끼"를 어간으로 승격할 때 재사용), 현재는 빈 객체로 둔다.
+ *
+ * 주의(향후 데이터 추가 시 필독): profanity.ts는 문장 단위로 분리된 뒤 문장마다
+ * `maskLineProfanity`를 새로 호출하므로, 이 목록의 "직전 어절" 판정은 문장 경계를 넘지
+ * 못한다(같은 줄이라도 문장이 다르면 prevCore가 초기화됨). 이 데이터를 채우게 되면
+ * `detectProfanity`의 L-2 주석(profanity.ts)을 함께 확인하고, 문장 경계를 넘는 케이스가
+ * 실제로 존재하는지 테스트로 검증할 것.
  */
 export const PRECEDING_WORD_EXCEPTIONS: Readonly<Record<string, readonly string[]>> = {};

@@ -101,6 +101,65 @@ describe('detectProfanity — NFR-3.3 예외 없이 처리되는 경계 입력',
 
     expect(elapsed).toBeLessThan(1000);
   });
+
+  // L-3(리뷰 정리): 문장부호가 매우 많은 입력에서 문장 분리 개수만큼 matches가 무한정 커질 수
+  // 있었다(실측 10만 건 이상). 상한(500)을 넘지 않아야 한다.
+  test('문장부호가 매우 많은 입력에서도 matches가 상한(500건)을 넘지 않는다', () => {
+    const dense = '씨발!'.repeat(10000);
+
+    const result = detectProfanity(dense);
+
+    expect(result.matches.length).toBeLessThanOrEqual(500);
+    expect(result.matches.length).toBeGreaterThan(0);
+  });
+});
+
+describe('detectProfanity — 문장 단위 출력(PM 요청, 2026-09-13 — FR-3.5 addendum)', () => {
+  test('한 줄에 비속어 문장과 무관한 문장이 섞여 있으면 비속어 문장만 반환한다', () => {
+    const transcript =
+      '상담사: 안녕하세요 오늘 확인해보니 처리가 늦어져서 죄송합니다. 근데 진짜 씨발 왜 이렇게 오래 걸려요. 빨리 좀 해주세요';
+    const result = detectProfanity(transcript);
+
+    expect(result.matches).toHaveLength(1);
+    // L-4(리뷰 정리): not.toContain 대신 전체 문장을 toBe로 고정해 분리 경계 오류(예: 앞/뒤
+    // 문장의 일부가 섞여 들어오는 회귀)까지 잡는다.
+    expect(result.matches[0].maskedText).toBe('근데 진짜 *** 왜 이렇게 오래 걸려요.');
+  });
+
+  // L-1(리뷰 정리): 숫자 사이의 "."(예: "3.5만원")은 소수점이지 문장 종결이 아니다. 이를
+  // 종결부호로 오인하면 "5만원인데 *** 뭐야"처럼 숫자 중간에서 문장이 잘려 화면에 어색하게
+  // 노출된다. 탐지된 문장이 숫자 표현을 온전히 포함해야 한다.
+  test('숫자 사이의 마침표(소수점)는 문장 종결로 취급하지 않아 문장이 잘리지 않는다', () => {
+    const result = detectProfanity('고객: 요금이 3.5만원인데 씨발 뭐야');
+
+    expect(result.matches).toHaveLength(1);
+    expect(result.matches[0].maskedText).toBe('요금이 3.5만원인데 *** 뭐야');
+  });
+
+  test('소수점 뒤에 실제 문장 종결이 있으면 그 지점에서는 정상적으로 분리된다', () => {
+    const transcript = '고객: 요금이 3.5만원이에요. 진짜 씨발 너무 비싸요.';
+    const result = detectProfanity(transcript);
+
+    expect(result.matches).toHaveLength(1);
+    expect(result.matches[0].maskedText).toBe('진짜 *** 너무 비싸요.');
+  });
+
+  test('한 줄에 서로 다른 문장으로 비속어가 2건 있으면 matches가 2건으로 분리된다', () => {
+    const transcript = '고객: 씨발 이거 왜 이래요. 진짜 개소리 하지 마세요.';
+    const result = detectProfanity(transcript);
+
+    expect(result.matches).toHaveLength(2);
+    expect(result.matches.every((m) => m.speaker === 'customer')).toBe(true);
+    expect(result.matches[0].maskedText).toContain('***');
+    expect(result.matches[1].maskedText).toContain('***');
+  });
+
+  test('문장부호 없는 짧은 발화는 회귀 없이 줄 전체가 그대로 매치된다', () => {
+    const result = detectProfanity('고객: 씨발 언제까지 기다려야 해요');
+    expect(result.matches).toHaveLength(1);
+    expect(result.matches[0].maskedText).toContain('***');
+    expect(result.matches[0].maskedText).toBe('*** 언제까지 기다려야 해요');
+  });
 });
 
 describe('detectProfanity — NFR-3.6 결정론성', () => {
@@ -109,5 +168,15 @@ describe('detectProfanity — NFR-3.6 결정론성', () => {
     const r1 = detectProfanity(input);
     const r2 = detectProfanity(input);
     expect(r1).toEqual(r2);
+  });
+
+  // L-4(리뷰 정리): 신규 문장 분리 경로(splitIntoSentences)가 결정론성 테스트에도 커버되도록
+  // 다문장 입력(소수점 포함 + 문장 분리 2건)을 추가한다.
+  test('다문장 입력(소수점 포함)에도 항상 동일한 결과를 반환한다', () => {
+    const input = '고객: 요금이 3.5만원인데 씨발 뭐야. 진짜 개소리 그만하세요.\n상담사: 화면이 꺼져서요';
+    const r1 = detectProfanity(input);
+    const r2 = detectProfanity(input);
+    expect(r1).toEqual(r2);
+    expect(r1.matches).toHaveLength(2);
   });
 });

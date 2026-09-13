@@ -176,17 +176,74 @@ function maskLineProfanity(text: string): { changed: boolean; text: string } {
   return { changed, text: outParts.join('') };
 }
 
+/** 문장 종결 부호(`. ! ?`, 연속 포함) 기준으로 한 줄(화자 발화 전체)을 문장 단위로 분리한다.
+ * 종결 부호는 직전 문장에 포함시켜 반환하며(중복/누락 없이 원문을 그대로 재구성 가능), 부호가
+ * 전혀 없는 구어체 발화는 줄 전체가 문장 하나로 그대로 반환된다(기존 동작과 동일 — 회귀 없음).
+ * 완벽한 자연어 문장 분리기가 아니라 "욕설이 포함된 문장만 노출"을 위한 실용적 근사치다.
+ *
+ * L-1(리뷰 정리): "3.5만원"처럼 숫자와 숫자 사이의 마침표는 문장 종결이 아니라 소수점이다.
+ * 이를 종결부호로 오인하면 "고객: 요금이 3.5만원인데 씨발 뭐야"가 "5만원인데 ***"처럼 숫자
+ * 중간에서 잘린 문장이 화면에 노출된다(탐지 자체는 맞지만 표시 품질 저하). 앞뒤가 모두 숫자인
+ * "."만 제외하도록 lookbehind/lookahead를 적용한다("!"/"?"는 이런 숫자 문맥이 없으므로 그대로
+ * 둔다). 마침표가 아닌 다른 종결부호와 연속으로 섞여도(예: "3.5!"의 "!") 정상적으로 종결로
+ * 인식된다 — 제외되는 것은 숫자 사이 "."뿐이다. */
+function splitIntoSentences(text: string): string[] {
+  const TERMINATOR_PATTERN = /(?:(?<!\d)\.(?!\d)|[!?])+/g;
+  const sentences: string[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = TERMINATOR_PATTERN.exec(text)) !== null) {
+    const end = match.index + match[0].length;
+    sentences.push(text.slice(lastIndex, end));
+    lastIndex = end;
+  }
+  if (lastIndex < text.length) {
+    sentences.push(text.slice(lastIndex));
+  }
+
+  return sentences;
+}
+
+/** L-3(리뷰 정리): 문장 단위 출력으로 전환되면서, 문장부호가 비정상적으로 밀집된 입력에서는
+ * `matches` 배열이 과도하게 커질 수 있다(리뷰 실측: 10만 건 이상). 실제 상담 트랜스크립트에서
+ * 발생 가능한 범위(한 통화에 욕설 문장이 수십 건이면 이미 매우 이례적인 케이스)를 넉넉히
+ * 상회하는 값으로 상한을 두어 응답 크기·저장·렌더링 비용을 보호한다. 상한에 도달하면 이후
+ * 문장 분석을 건너뛰고 즉시 반환한다(불필요한 연산 방지). 배열을 단순히 자르는 것만으로 이슈가
+ * 해소되므로 `ProfanityCheckResult`에 별도의 "잘림" 필드는 추가하지 않는다(과도한 스코프 확장
+ * 방지 — 필요해지면 그때 추가한다). */
+const MAX_PROFANITY_MATCHES = 500;
+
 /** 이미 PII 마스킹이 끝난 텍스트(maskedTranscript)에 대해 비속어를 탐지한다. 욕설이 포함되지
  * 않은 문장은 결과에 포함하지 않으며(전체 대화 미노출), 포함된 경우에도 화자 접두어 없이
- * 해당 문장만 반환한다. */
+ * 해당 문장만 반환한다.
+ *
+ * 출력 단위는 "줄(화자 턴) 전체"가 아니라 "문장"이다(PM 요청, 2026-09-13 — FR-3.5 addendum
+ * 참고: docs/requirements/phase3-pii-hardening.md). 한 줄 안에 비속어가 포함된 문장과 무관한
+ * 문장이 섞여 있으면, 비속어가 포함된 문장만 잘라서 반환한다. 한 줄에서 서로 다른 문장에
+ * 비속어가 여러 건 있으면 문장별로 별도의 match 항목을 만든다.
+ *
+ * L-2(리뷰 정리): 문장 분리로 인해 `maskLineProfanity`가 문장마다 새로 호출되므로, 어절
+ * 체이닝용 `prevCore`(PRECEDING_WORD_EXCEPTIONS 판정용, profanity-data.ts 참고)는 문장 경계에서
+ * 초기화되고 문장을 넘어 이어지지 않는다. 현재 `PRECEDING_WORD_EXCEPTIONS`가 빈 객체라 실질
+ * 영향은 없지만, 향후 이 데이터를 채우면 "강아지... 새끼를"처럼 예외 대상 어절이 문장 경계로
+ * 갈라진 케이스에서 예외가 적용되지 않아 오탐이 생길 수 있다. 데이터가 채워질 때 반드시
+ * 재검토할 것 — 필요해지면 직전 문장의 마지막 core를 다음 문장의 초기 prevCore로 넘기는 방식
+ * (문장 경계를 넘는 체이닝)으로 확장한다. */
 export function detectProfanity(maskedTranscript: string): ProfanityCheckResult {
   const lines = parseSpeakerLines(maskedTranscript);
   const matches: ProfanityMatch[] = [];
 
-  for (const line of lines) {
-    const { changed, text } = maskLineProfanity(line.text);
-    if (changed) {
-      matches.push({ speaker: line.speaker, maskedText: text });
+  outer: for (const line of lines) {
+    for (const rawSentence of splitIntoSentences(line.text)) {
+      const sentence = rawSentence.trim();
+      if (sentence.length === 0) continue;
+
+      const { changed, text } = maskLineProfanity(sentence);
+      if (changed) {
+        matches.push({ speaker: line.speaker, maskedText: text });
+        if (matches.length >= MAX_PROFANITY_MATCHES) break outer;
+      }
     }
   }
 
