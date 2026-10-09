@@ -1,14 +1,84 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import {
   downloadEvalSheets,
+  getEvalSheetDetail,
   listEvalSheets,
   resetEvalSheet,
   UploadValidationError,
   uploadEvalSheets,
+  type EvalSheetDetail,
   type EvalSheetSummary,
   type UploadEvalSheetsResult,
 } from '../api/client';
 import { TopBar } from '../components/TopBar';
+
+const EvalSheetDetailPanel = forwardRef<
+  HTMLElement,
+  { sheet: EvalSheetDetail; onClose: () => void }
+>(function EvalSheetDetailPanel({ sheet, onClose }, ref) {
+  return (
+    <section ref={ref} className="sheet-detail" aria-label={`${sheet.domainName} 평가시트 정의`}>
+      <div className="sheet-detail-header">
+        <div>
+          <h2>{sheet.domainName} 평가시트</h2>
+          <p className="metadata-note">
+            버전 {sheet.version}
+            {sheet.mainConsultationTypes ? ` · 주요 상담 유형: ${sheet.mainConsultationTypes}` : ''}
+          </p>
+        </div>
+        <button type="button" className="sheets-view-btn" onClick={onClose}>
+          닫기
+        </button>
+      </div>
+
+      <div className="sheet-detail-scroll">
+        <table className="sheets-table sheet-detail-table">
+          <thead>
+            <tr>
+              <th>구분</th>
+              <th>평가항목</th>
+              <th>세부 평가내용</th>
+              <th className="num">배점</th>
+              <th>게이팅(P/F)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sheet.categories.map((category) =>
+              category.items.map((item, idx) => (
+                <tr key={item.itemId}>
+                  {idx === 0 && (
+                    <td rowSpan={category.items.length} className="sheet-detail-category">
+                      {category.categoryName}
+                      <span className="sheet-detail-subtotal">{category.maxScore}점</span>
+                    </td>
+                  )}
+                  <td>{item.itemName}</td>
+                  <td>{item.criteria}</td>
+                  <td className="num">{item.maxScore}</td>
+                  <td>{item.gating ? <span className="badge-pill sheets-custom">P/F</span> : '-'}</td>
+                </tr>
+              )),
+            )}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={3}>합계</td>
+              <td className="num">{sheet.totalMaxScore}</td>
+              <td />
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <p className="metadata-note">
+        등급 기준: {[...sheet.gradeCriteria].sort((a, b) => b.minScore - a.minScore).map((g) => `${g.minScore}점 이상 ${g.grade}`).join(' / ')}
+      </p>
+      {sheet.gatingPolicy && <p className="metadata-note">{sheet.gatingPolicy}</p>}
+      {sheet.sourceCitation && <p className="metadata-note">{sheet.sourceCitation}</p>}
+      {sheet.disclaimer && <p className="metadata-note">{sheet.disclaimer}</p>}
+    </section>
+  );
+});
 
 export function EvalSheetsPage() {
   const [sheets, setSheets] = useState<EvalSheetSummary[]>([]);
@@ -19,6 +89,10 @@ export function EvalSheetsPage() {
   const [downloadError, setDownloadError] = useState<string>();
   const [downloading, setDownloading] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  const [detail, setDetail] = useState<EvalSheetDetail>();
+  const [detailLoading, setDetailLoading] = useState<string>();
+  const [detailError, setDetailError] = useState<string>();
+  const detailRef = useRef<HTMLElement>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -62,6 +136,20 @@ export function EvalSheetsPage() {
       setDownloadError(e instanceof Error ? e.message : '평가시트를 다운로드하지 못했습니다.');
     } finally {
       setDownloading(false);
+    }
+  }
+
+  async function onView(sheet: EvalSheetSummary) {
+    setDetailLoading(sheet.domainId);
+    setDetailError(undefined);
+    try {
+      setDetail(await getEvalSheetDetail(sheet.domainId));
+      requestAnimationFrame(() => detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    } catch (e) {
+      setDetail(undefined);
+      setDetailError(e instanceof Error ? e.message : '평가시트를 불러오지 못했습니다.');
+    } finally {
+      setDetailLoading(undefined);
     }
   }
 
@@ -197,7 +285,16 @@ export function EvalSheetsPage() {
                         <span className="badge-pill">기본</span>
                       )}
                     </td>
-                    <td>
+                    <td className="sheets-row-actions">
+                      <button
+                        type="button"
+                        className="sheets-view-btn"
+                        disabled={detailLoading === s.domainId}
+                        aria-pressed={detail?.domainId === s.domainId}
+                        onClick={() => void onView(s)}
+                      >
+                        {detailLoading === s.domainId ? '불러오는 중…' : '보기'}
+                      </button>
                       {s.customized && (
                         <button
                           type="button"
@@ -213,6 +310,9 @@ export function EvalSheetsPage() {
                 ))}
               </tbody>
             </table>
+
+            {detailError && <div className="field-error" role="alert">{detailError}</div>}
+            {detail && <EvalSheetDetailPanel ref={detailRef} sheet={detail} onClose={() => setDetail(undefined)} />}
           </div>
         </div>
       </div>

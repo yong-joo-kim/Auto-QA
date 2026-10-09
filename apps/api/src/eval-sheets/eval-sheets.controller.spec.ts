@@ -139,4 +139,30 @@ describe('EvalSheetsController', () => {
     const ok = await fetch(`${baseUrl}/eval-sheets/telecom/override`, { method: 'DELETE' });
     expect(ok.status).toBe(204);
   });
+
+  describe('GET /eval-sheets/:domainId (평가시트 보기)', () => {
+    test('도메인의 구분/항목/세부내용/배점/게이팅 정의를 반환한다', async () => {
+      const res = await fetch(`${baseUrl}/eval-sheets/telecom`);
+      const body = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(body).toEqual(loadSeedEvalSheet('telecom'));
+    });
+
+    test('download 경로는 :domainId에 가려지지 않는다', async () => {
+      const res = await fetch(`${baseUrl}/eval-sheets/download`);
+      expect(res.status).toBe(200);
+      expect(res.headers.get('content-type')).toContain('spreadsheetml');
+    });
+
+    test('미지원 도메인은 404', async () => {
+      expect((await fetch(`${baseUrl}/eval-sheets/not-a-domain`)).status).toBe(404);
+    });
+
+    test('손상된 수정본은 500과 원인 메시지', async () => {
+      fs.writeFileSync(path.join(dir, 'telecom.json'), '{broken');
+      const res = await fetch(`${baseUrl}/eval-sheets/telecom`);
+      expect(res.status).toBe(500);
+    });
+  });
 });

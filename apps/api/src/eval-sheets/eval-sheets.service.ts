@@ -48,6 +48,19 @@ export class EvalSheetsService {
     return loadEvalSheet(domainId);
   }
 
+  /** 화면 조회용 단일 평가시트. 미지원 도메인은 404, 손상된 수정본은 원인 메시지와 함께 500. */
+  getSheetDetail(domainId: string): EvalSheet {
+    if (!listSupportedDomainIds().includes(domainId)) {
+      throw new NotFoundException(`지원하지 않는 도메인입니다: ${domainId}`);
+    }
+    try {
+      return loadEvalSheet(domainId);
+    } catch (e) {
+      if (e instanceof EvalSheetOverrideCorruptError) throw new InternalServerErrorException(e.message);
+      throw e;
+    }
+  }
+
   list(): EvalSheetSummary[] {
     return listSupportedDomainIds().map((domainId) => {
       let sheet: EvalSheet;

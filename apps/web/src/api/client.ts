@@ -114,6 +114,29 @@ export interface UploadEvalSheetsResult {
   ignoredSheets: string[];
 }
 
+/** GET /eval-sheets/:domainId — 평가시트 정의(보기 화면용) */
+export interface EvalSheetDetail {
+  domainId: string;
+  domainName: string;
+  version: string;
+  mainConsultationTypes?: string;
+  totalMaxScore: number;
+  gradeCriteria: { minScore: number; grade: string }[];
+  gatingPolicy?: string;
+  categories: {
+    categoryId: string;
+    categoryName: string;
+    maxScore: number;
+    items: { itemId: string; itemName: string; criteria: string; maxScore: number; gating: boolean }[];
+  }[];
+  sourceCitation?: string;
+  disclaimer?: string;
+}
+
+export function getEvalSheetDetail(domainId: string): Promise<EvalSheetDetail> {
+  return request<EvalSheetDetail>(`/eval-sheets/${encodeURIComponent(domainId)}`);
+}
+
 export function listEvalSheets(): Promise<EvalSheetSummary[]> {
   return request<EvalSheetSummary[]>('/eval-sheets');
 }

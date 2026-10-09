@@ -1332,3 +1332,16 @@ button {
 .sheets-warning ul { margin: 8px 0 0; padding-left: 18px; font-weight: 500; }
 .sheets-error-list { margin: 8px 0 0; padding-left: 18px; font-weight: 500; }
 .top-bar-nav { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; }
+.sheets-row-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.sheets-view-btn { background: var(--surface); color: var(--accent); border: 1.5px solid var(--accent-border); border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.sheets-view-btn[aria-pressed="true"] { background: var(--accent-soft); }
+.sheet-detail { border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: var(--neutral-soft); scroll-margin-top: 16px; }
+.sheet-detail-header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.sheet-detail-header h2 { margin: 0 0 4px; font-size: 17px; }
+.sheet-detail-scroll { overflow-x: auto; background: var(--surface); border-radius: 8px; }
+.sheet-detail-table td, .sheet-detail-table th { vertical-align: top; }
+.sheet-detail-table td.num, .sheet-detail-table th.num { text-align: right; }
+.sheet-detail-category { font-weight: 700; white-space: nowrap; }
+.sheet-detail-subtotal { display: block; font-weight: 500; font-size: 12px; color: var(--text-muted); }
+.sheet-detail-table tfoot td { font-weight: 700; border-top: 2px solid var(--border); }
+.sheet-detail-table th { white-space: nowrap; }

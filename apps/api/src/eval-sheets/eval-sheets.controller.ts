@@ -12,6 +12,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { TrustedOriginGuard } from '../common/trusted-origin.guard';
+import type { EvalSheet } from '@auto-qa/eval-schema';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import { EvalSheetsService, EvalSheetSummary, UploadEvalSheetsResult } from './eval-sheets.service';
@@ -36,6 +37,12 @@ export class EvalSheetsController {
     res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(DOWNLOAD_FILE_NAME)}`);
     res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
     res.send(buffer);
+  }
+
+  /** 'download'보다 뒤에 선언해야 경로가 가려지지 않는다. */
+  @Get(':domainId')
+  detail(@Param('domainId') domainId: string): EvalSheet {
+    return this.evalSheets.getSheetDetail(domainId);
   }
 
   @Post('upload')
