@@ -53,13 +53,16 @@ export type PiiKind =
   | 'account'
   | 'email';
 
-const PLACEHOLDERS: Record<PiiKind, string> = {
+/** PII 종류별 마스킹 placeholder. `pii-detection.ts`가 "어떤 문장에 PII가 남아있는지" 판정할
+ * 때도 동일한 값을 재사용한다(문자열 리터럴 중복으로 인한 드리프트 방지). */
+export const PII_PLACEHOLDERS: Record<PiiKind, string> = {
   rrn: '[주민등록번호]',
   phone: '[전화번호]',
   card: '[카드번호]',
   account: '[계좌번호]',
   email: '[이메일]',
 };
+const PLACEHOLDERS = PII_PLACEHOLDERS;
 
 // 구분자 클래스. FR-1.1: 하이픈/점/공백(1개 이상)/구분자 없음을 모두 허용하고,
 // 동일 번호 내에서 혼용(예: "010.1234-5678")도 허용해야 하므로 각 자리마다 독립적으로

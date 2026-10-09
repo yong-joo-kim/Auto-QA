@@ -63,6 +63,8 @@ function buildAggregation(): AggregatedEvaluation {
     improvements: ['개선 점'],
     profanityDetected: false,
     profanityMatches: [],
+    piiDetected: false,
+    piiMatches: [],
     llmProviderMeta: { provider: 'mock', model: 'mock-v1', latencyMs: 1 },
   };
 }
@@ -94,6 +96,8 @@ interface FakeEvaluationRow {
   improvements: string;
   profanityDetected: boolean;
   profanityMatches: string;
+  piiDetected: boolean;
+  piiMatches: string;
   createdAt: Date;
 }
 

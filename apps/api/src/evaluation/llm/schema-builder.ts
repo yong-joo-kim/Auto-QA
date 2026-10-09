@@ -84,8 +84,28 @@ export function buildEvaluationResponseJsonSchema(evalSheet: EvalSheet): Record<
         required: ['detected', 'matches'],
         additionalProperties: false,
       },
+      piiCheck: {
+        type: 'object',
+        properties: {
+          detected: { type: 'boolean' },
+          matches: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                speaker: { type: 'string', enum: ['customer', 'agent'] },
+                maskedText: { type: 'string' },
+              },
+              required: ['speaker', 'maskedText'],
+              additionalProperties: false,
+            },
+          },
+        },
+        required: ['detected', 'matches'],
+        additionalProperties: false,
+      },
     },
-    required: ['items', 'coaching', 'profanityCheck'],
+    required: ['items', 'coaching', 'profanityCheck', 'piiCheck'],
     additionalProperties: false,
   };
 }
@@ -146,6 +166,17 @@ export function buildLlmResponseZodSchema(evalSheet: EvalSheet) {
           }),
         ),
       }),
+      // PII 마스킹 알림(profanityCheck와 동일한 방식, PM 요청 2026-09-13): 탐지 여부 +
+      // 탐지 시 화자 구분된 매치 목록(placeholder로 치환된 문장만 포함)
+      piiCheck: z.object({
+        detected: z.boolean(),
+        matches: z.array(
+          z.object({
+            speaker: z.enum(['customer', 'agent']),
+            maskedText: z.string(),
+          }),
+        ),
+      }),
     })
     .superRefine((data, ctx) => {
       const gotIds = data.items.map((i) => i.itemId);
@@ -171,6 +202,12 @@ export function buildLlmResponseZodSchema(evalSheet: EvalSheet) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'profanityCheck.detected가 true이면 matches가 1건 이상이어야 합니다.',
+        });
+      }
+      if (data.piiCheck.detected && data.piiCheck.matches.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'piiCheck.detected가 true이면 matches가 1건 이상이어야 합니다.',
         });
       }
     });

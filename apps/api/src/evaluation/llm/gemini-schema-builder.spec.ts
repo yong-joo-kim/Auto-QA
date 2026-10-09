@@ -98,6 +98,11 @@ describe('buildGeminiResponseSchema', () => {
     const schema = buildGeminiResponseSchema(SHEET) as { properties: Record<string, unknown> };
     expect(schema.properties.profanityCheck).toBeUndefined();
   });
+
+  test('piiCheck는 스키마에 포함하지 않는다(profanityCheck와 동일한 방식 — 로컬 산출)', () => {
+    const schema = buildGeminiResponseSchema(SHEET) as { properties: Record<string, unknown> };
+    expect(schema.properties.piiCheck).toBeUndefined();
+  });
 });
 
 describe('convertGeminiItemsObjectToArray', () => {

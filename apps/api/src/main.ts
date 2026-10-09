@@ -2,10 +2,13 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { getAllowedOrigins } from './common/trusted-origin.guard';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  // M-5: 모든 출처 허용 대신 env CORS_ORIGINS(쉼표 구분, 기본 로컬 Vite 개발 서버)로 제한한다.
+  const allowedOrigins = getAllowedOrigins();
+  app.enableCors({ origin: allowedOrigins.includes('*') ? true : allowedOrigins });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

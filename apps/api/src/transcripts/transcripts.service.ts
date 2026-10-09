@@ -1,6 +1,16 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { Evaluation } from '@prisma/client';
-import { EvalSheet } from '@auto-qa/eval-schema';
+import {
+  EvalSheet,
+  EvalSheetOverrideCorruptError,
+  evalSheetSchema,
+  loadSeedEvalSheet,
+} from '@auto-qa/eval-schema';
 import { maskPii } from '@auto-qa/pii-mask';
 import {
   countNonWhitespace,
@@ -65,6 +75,8 @@ export class TranscriptsService {
           transcriptId: transcript.id,
           domainId: dto.domainId,
           evalSheetVersion: evalSheet.version,
+          // H-2: 채점 시점 기준을 보존해 이후 시트 수정과 무관하게 보정/조회가 당시 기준으로 동작하게 한다.
+          evalSheetSnapshot: JSON.stringify(evalSheet),
           llmProvider: aggregation.llmProviderMeta.provider,
           llmModel: aggregation.llmProviderMeta.model,
           status: aggregation.status,
@@ -79,6 +91,8 @@ export class TranscriptsService {
           improvements: JSON.stringify(aggregation.improvements),
           profanityDetected: aggregation.profanityDetected,
           profanityMatches: JSON.stringify(aggregation.profanityMatches),
+          piiDetected: aggregation.piiDetected,
+          piiMatches: JSON.stringify(aggregation.piiMatches),
         },
       });
 
@@ -119,7 +133,7 @@ export class TranscriptsService {
     transcript: { id: string; domainId: string; maskingSummary?: string | null },
     evaluation: Evaluation,
   ): EvaluationResultResponse {
-    const evalSheet = this.evalSheets.getSheet(transcript.domainId);
+    const evalSheet = this.resolveSheetForEvaluation(evaluation);
     // Phase 3 FR-4: 레거시 레코드(Phase 3 이전 저장분, 컬럼 자체가 없던 시절)는
     // maskingSummary가 없으므로 null을 그대로 내려보낸다(§9 Out of scope: 소급 재계산 불가).
     // L-4: 컬럼 값이 손상되어 JSON.parse가 실패하더라도(예: 수동 DB 조작) 결과 조회 API 전체가
@@ -146,6 +160,8 @@ export class TranscriptsService {
       improvements: JSON.parse(evaluation.improvements) as string[],
       profanityDetected: evaluation.profanityDetected,
       profanityMatches: JSON.parse(evaluation.profanityMatches) as EvaluationResultResponse['profanityMatches'],
+      piiDetected: evaluation.piiDetected,
+      piiMatches: JSON.parse(evaluation.piiMatches) as EvaluationResultResponse['piiMatches'],
       sourceCitation: evalSheet.sourceCitation,
       disclaimer: evalSheet.disclaimer,
       createdAt: evaluation.createdAt.toISOString(),
@@ -209,7 +225,7 @@ export class TranscriptsService {
     const updatedItems = [...items];
     updatedItems[targetIndex] = updatedItem;
 
-    const evalSheet = this.getEvalSheetOrThrow(evaluation.domainId);
+    const evalSheet = this.resolveSheetForEvaluation(evaluation, items);
     const recalculated = aggregateFromScoredItems(updatedItems, evalSheet);
 
     // Evaluation.status는 override로 자동 변경하지 않는다(manual_review였어도 유지, §4.5).
@@ -240,11 +256,69 @@ export class TranscriptsService {
     }
   }
 
+  /**
+   * 저장된 평가 결과의 재계산/표시에 쓸 평가시트를 결정한다(H-2, L-5).
+   *  1. 채점 시점 스냅샷(evalSheetSnapshot)이 있으면 그것을 사용한다.
+   *  2. 레거시 레코드(스냅샷 없음): 현재 시트의 버전이 저장된 evalSheetVersion과 같으면 현재 시트를 쓰고(기존 동작),
+   *     다르면 저장된 items/categoryScores로 구조를 복원한다(현재 시트로 덮어쓰면 배점 초과/502가 발생하므로).
+   * 현재 시트 로드가 실패해도(override 손상 등) 결과 조회가 막히지 않도록 seed 시트로 대체한다.
+   */
+  private resolveSheetForEvaluation(evaluation: Evaluation, storedItems?: EvaluationItemResult[]): EvalSheet {
+    if (evaluation.evalSheetSnapshot) {
+      try {
+        const parsed = evalSheetSchema.safeParse(JSON.parse(evaluation.evalSheetSnapshot));
+        if (parsed.success) return parsed.data;
+      } catch {
+        // 스냅샷 손상: 레거시 경로로 폴백
+      }
+    }
+
+    let current: EvalSheet;
+    try {
+      current = this.evalSheets.getSheet(evaluation.domainId);
+    } catch {
+      current = loadSeedEvalSheet(evaluation.domainId);
+    }
+    if (current.version === evaluation.evalSheetVersion) return current;
+
+    try {
+      const items = storedItems ?? (JSON.parse(evaluation.items) as EvaluationItemResult[]);
+      const categoryScores = JSON.parse(evaluation.categoryScores) as EvaluationResultResponse['categoryScores'];
+      const rebuilt = evalSheetSchema.safeParse({
+        ...current,
+        version: evaluation.evalSheetVersion,
+        totalMaxScore: evaluation.totalMaxScore,
+        categories: categoryScores.map((c) => ({
+          categoryId: c.categoryId,
+          categoryName: c.categoryName,
+          maxScore: c.maxScore,
+          items: items
+            .filter((i) => i.categoryId === c.categoryId)
+            .map((i) => ({
+              itemId: i.itemId,
+              itemName: i.itemName,
+              criteria: i.criteria,
+              maxScore: i.maxScore,
+              gating: i.gating,
+            })),
+        })),
+      });
+      if (rebuilt.success) return rebuilt.data;
+    } catch {
+      // 복원 불가: 현재 시트로 폴백(기존 동작)
+    }
+    return current;
+  }
+
   /** domainId에 대응하는 평가시트를 로드한다. 존재하지 않는 domainId는 400으로 거부한다(FR-11.4). */
   private getEvalSheetOrThrow(domainId: string): EvalSheet {
     try {
       return this.evalSheets.getSheet(domainId);
-    } catch {
+    } catch (e) {
+      // 수정본 손상은 사용자 입력 오류가 아니므로 400(미지원 domainId)과 구분한다(M-6).
+      if (e instanceof EvalSheetOverrideCorruptError) {
+        throw new ServiceUnavailableException(e.message);
+      }
       throw new BadRequestException(`지원하지 않는 domainId입니다. (domainId=${domainId})`);
     }
   }

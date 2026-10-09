@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { detectProfanity } from '@auto-qa/pii-mask';
+import { detectPii, detectProfanity } from '@auto-qa/pii-mask';
 import {
   LlmCoaching,
   LlmEvaluationProvider,
@@ -82,6 +82,7 @@ export class MockLlmEvaluationProvider implements LlmEvaluationProvider {
 
     const coaching = buildCoaching(evalSheet, items, categoryStats, gatingFailedItems);
     const profanityCheck = detectProfanity(maskedTranscript);
+    const piiCheck = detectPii(maskedTranscript);
 
     return {
       items,
@@ -92,6 +93,7 @@ export class MockLlmEvaluationProvider implements LlmEvaluationProvider {
       },
       coaching,
       profanityCheck,
+      piiCheck,
     };
   }
 

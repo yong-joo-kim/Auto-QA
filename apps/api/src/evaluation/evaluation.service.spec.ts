@@ -62,6 +62,7 @@ function buildValidResponse(): LlmEvaluationResponse {
     providerMeta: { provider: 'test', model: 'test-v1', latencyMs: 10 },
     coaching: { goodPoints: ['좋은 점1'], improvements: ['개선 점1'] },
     profanityCheck: { detected: false, matches: [] },
+    piiCheck: { detected: false, matches: [] },
   };
 }
 
@@ -107,6 +108,13 @@ describe('EvaluationService — 구조적 계약 위반 → 502 (BadGatewayExcep
       },
     ],
     [
+      'piiCheck 누락',
+      (r) => {
+        delete r.piiCheck;
+        return r;
+      },
+    ],
+    [
       'goodPoints: [] (AC-12 위반)',
       (r) => {
         r.coaching.goodPoints = [];
@@ -145,6 +153,20 @@ describe('EvaluationService — 구조적 계약 위반 → 502 (BadGatewayExcep
       'matches[].speaker enum 위반("bot")',
       (r) => {
         r.profanityCheck = { detected: true, matches: [{ speaker: 'bot', maskedText: '****' }] };
+        return r;
+      },
+    ],
+    [
+      'piiCheck.detected:true & matches:[]',
+      (r) => {
+        r.piiCheck = { detected: true, matches: [] };
+        return r;
+      },
+    ],
+    [
+      'piiCheck matches[].speaker enum 위반("bot")',
+      (r) => {
+        r.piiCheck = { detected: true, matches: [{ speaker: 'bot', maskedText: '[전화번호]' }] };
         return r;
       },
     ],

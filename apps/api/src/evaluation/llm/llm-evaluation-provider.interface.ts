@@ -52,12 +52,25 @@ export interface LlmProfanityCheck {
   matches: LlmProfanityMatch[];
 }
 
+export interface LlmPiiMatch {
+  speaker: Speaker;
+  /** PII 원문이 아니라 placeholder(예: "[전화번호]")로 치환된 문장만 포함 (원문 비노출) */
+  maskedText: string;
+}
+
+/** profanityCheck와 동일한 방식(FR-6.1)으로 LLM에 요청하지 않고 로컬 detectPii()로 산출한다. */
+export interface LlmPiiCheck {
+  detected: boolean;
+  matches: LlmPiiMatch[];
+}
+
 export interface LlmEvaluationResponse {
   /** evalSheet의 모든 itemId에 대해 1건씩, 누락/중복/미지 itemId 불가 */
   items: LlmItemResult[];
   providerMeta: LlmProviderMeta;
   coaching: LlmCoaching;
   profanityCheck: LlmProfanityCheck;
+  piiCheck: LlmPiiCheck;
 }
 
 export interface LlmEvaluationProvider {

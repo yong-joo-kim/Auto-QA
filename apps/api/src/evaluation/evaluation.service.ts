@@ -8,6 +8,7 @@ import {
   Grade,
   GatingResult,
   PassFail,
+  PiiMatch,
   ProfanityMatch,
 } from '@auto-qa/shared-types';
 import { buildLlmResponseZodSchema } from './llm/schema-builder';
@@ -32,6 +33,8 @@ export interface AggregatedEvaluation {
   improvements: string[];
   profanityDetected: boolean;
   profanityMatches: ProfanityMatch[];
+  piiDetected: boolean;
+  piiMatches: PiiMatch[];
   llmProviderMeta: LlmProviderMeta;
 }
 
@@ -113,6 +116,8 @@ export class EvaluationService {
       improvements: response.coaching.improvements,
       profanityDetected: response.profanityCheck.detected,
       profanityMatches: response.profanityCheck.matches,
+      piiDetected: response.piiCheck.detected,
+      piiMatches: response.piiCheck.matches,
       llmProviderMeta: response.providerMeta,
     };
   }

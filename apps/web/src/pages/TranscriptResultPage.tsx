@@ -4,6 +4,7 @@ import type { EvaluationItemResult, EvaluationResultResponse } from '@auto-qa/sh
 import { ApiError, getEvaluationResult } from '../api/client';
 import { TopBar } from '../components/TopBar';
 import { ProfanityBadge } from '../components/ProfanityBadge';
+import { PiiBadge } from '../components/PiiBadge';
 import { GatingBanner } from '../components/GatingBanner';
 import { TotalScoreSummary } from '../components/TotalScoreSummary';
 import { CoachingSummary } from '../components/CoachingSummary';
@@ -126,7 +127,10 @@ export function TranscriptResultPage() {
               </Link>
             </div>
 
-            <ProfanityBadge detected={result.profanityDetected} matches={result.profanityMatches} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <ProfanityBadge detected={result.profanityDetected} matches={result.profanityMatches} />
+              <PiiBadge detected={result.piiDetected} matches={result.piiMatches} />
+            </div>
 
             <GatingBanner
               ref={gatingBannerRef}

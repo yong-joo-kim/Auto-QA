@@ -110,6 +110,13 @@ export interface ProfanityMatch {
   maskedText: string;
 }
 
+/** PII 마스킹 알림(비속어 탐지와 동일한 방식, PM 요청 2026-09-13). */
+export interface PiiMatch {
+  speaker: Speaker;
+  /** PII 원문이 아니라 placeholder(예: "[전화번호]")로 치환된 문장만 포함 (원문 비노출) */
+  maskedText: string;
+}
+
 export interface FailedGatingItem {
   itemId: string;
   itemName: string;
@@ -146,6 +153,8 @@ export interface EvaluationResultResponse {
   improvements: string[];
   profanityDetected: boolean;
   profanityMatches: ProfanityMatch[];
+  piiDetected: boolean;
+  piiMatches: PiiMatch[];
   sourceCitation?: string;
   disclaimer?: string;
   createdAt: string;

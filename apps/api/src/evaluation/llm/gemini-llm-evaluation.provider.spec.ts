@@ -150,6 +150,49 @@ describe('GeminiLlmEvaluationProvider', () => {
       expect(result.providerMeta.latencyMs).toBeGreaterThanOrEqual(0);
       // FR-6.1: profanityCheck는 Gemini가 아니라 로컬 detectProfanity로 산출된다(비속어 없음).
       expect(result.profanityCheck).toEqual({ detected: false, matches: [] });
+      // PII 마스킹 알림(profanityCheck와 동일한 방식): maskedTranscript에 이미 [전화번호]
+      // placeholder가 있으므로 로컬 detectPii로 탐지되어야 한다. 화자 접두어("상담사:"/"고객:")가
+      // 줄바꿈 없이 한 줄에 섞여 있으므로(parseSpeakerLines는 줄 단위로만 화자를 판정) 두 문장
+      // 모두 최초 화자인 agent로 귀속된다.
+      expect(result.piiCheck.detected).toBe(true);
+      expect(result.piiCheck.matches).toHaveLength(1);
+      expect(result.piiCheck.matches[0].speaker).toBe('agent');
+      expect(result.piiCheck.matches[0].maskedText).toContain('[전화번호]');
+    } finally {
+      await stub.close();
+    }
+  });
+
+  test('PII placeholder가 없는 트랜스크립트는 piiCheck.detected가 false로 산출된다', async () => {
+    const stub = await createStub();
+    try {
+      stub.setHandler(
+        jsonHandler(
+          200,
+          successGeminiBody(
+            JSON.stringify({
+              items: {
+                'item-1': { score: 4, reason: 'r1' },
+                'item-2': { score: 3, reason: 'r2' },
+                'item-3': { score: 8, reason: 'r3', passFail: 'P' },
+              },
+              coaching: { goodPoints: ['a'], improvements: ['b'] },
+              // Gemini 응답 스키마에서 piiCheck는 요청하지 않으므로, 모델이 실수로 이 필드를
+              // 보내더라도 provider가 무시하고 로컬 산출값으로 덮어써야 한다(profanityCheck와 동일 원칙).
+              piiCheck: { detected: true, matches: [{ speaker: 'agent', maskedText: '[전화번호]' }] },
+            }),
+          ),
+        ),
+      );
+
+      const provider = createProvider(stub.url);
+      const result = await provider.evaluate({
+        domainId: 'test-domain',
+        maskedTranscript: '상담사: 안녕하세요. 고객: 확인 감사합니다.',
+        evalSheet: BASE_SHEET,
+      });
+
+      expect(result.piiCheck).toEqual({ detected: false, matches: [] });
     } finally {
       await stub.close();
     }

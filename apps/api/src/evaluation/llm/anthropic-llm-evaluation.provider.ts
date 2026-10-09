@@ -16,8 +16,8 @@ import {
  *    우선 시도하되, Anthropic tool `input_schema`가 `const`/`anyOf`/`additionalProperties`를
  *    실제로 지원하는지 실호출로 먼저 검증한다(추측 금지 — Gemini는 이 세 요소를 모두
  *    거부했다. `./llm/README.md` 참고).
- *  - `profanityCheck`는 Gemini와 동일하게 로컬 `detectProfanity()`로 산출하는 방안을 우선
- *    검토한다(Phase 3 골든 코퍼스 결정론성 유지).
+ *  - `profanityCheck`/`piiCheck`는 Gemini와 동일하게 로컬 `detectProfanity()`/`detectPii()`로
+ *    산출하는 방안을 우선 검토한다(Phase 3 골든 코퍼스 결정론성 유지).
  *  - 마스킹된 트랜스크립트만 전송한다(원문 절대 미전송).
  *  - 자세한 공통 규약은 `./llm/README.md` 참고.
  */

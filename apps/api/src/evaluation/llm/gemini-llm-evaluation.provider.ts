@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { detectProfanity } from '@auto-qa/pii-mask';
+import { detectPii, detectProfanity } from '@auto-qa/pii-mask';
 import {
   LlmEvaluationProvider,
   LlmEvaluationRequest,
@@ -150,6 +150,9 @@ export class GeminiLlmEvaluationProvider implements LlmEvaluationProvider {
       const items = convertGeminiItemsObjectToArray(parsedObj.items, request.evalSheet);
       // FR-6.1: profanityCheck는 Gemini에 요청하지 않고 로컬 detectProfanity 결과를 그대로 사용한다.
       const profanityCheck = detectProfanity(request.maskedTranscript);
+      // PII 마스킹 알림(profanityCheck와 동일한 방식, PM 요청 2026-09-13): 로컬 detectPii 결과를
+      // 그대로 사용한다(LLM에 요청하지 않음 — gemini-schema-builder.ts에 piiCheck를 포함하지 않음).
+      const piiCheck = detectPii(request.maskedTranscript);
 
       this.logObservability({
         domainId: request.domainId,
@@ -164,6 +167,7 @@ export class GeminiLlmEvaluationProvider implements LlmEvaluationProvider {
         items,
         coaching: parsedObj.coaching,
         profanityCheck,
+        piiCheck,
         providerMeta: { provider: 'gemini', model, latencyMs },
       } as unknown as LlmEvaluationResponse;
     } catch (error) {

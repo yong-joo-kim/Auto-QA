@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export function TopBar() {
   return (
     <div className="top-bar">
@@ -20,6 +22,9 @@ export function TopBar() {
       <div className="top-bar-title">Auto QA</div>
       <div className="top-bar-divider" />
       <div className="top-bar-subtitle">콜센터 상담 자동평가</div>
+      <Link className="top-bar-nav" to="/eval-sheets">
+        평가시트 관리
+      </Link>
     </div>
   );
 }

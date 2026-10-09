@@ -32,8 +32,9 @@ import {
   PROFANITY_COMPOUNDS,
   PROFANITY_STEMS,
 } from './profanity-data';
+import { parseSpeakerLines, splitIntoSentences, Speaker } from './transcript-utils';
 
-export type Speaker = 'customer' | 'agent';
+export type { Speaker };
 
 export interface ProfanityMatch {
   speaker: Speaker;
@@ -43,38 +44,6 @@ export interface ProfanityMatch {
 export interface ProfanityCheckResult {
   detected: boolean;
   matches: ProfanityMatch[];
-}
-
-const AGENT_PREFIX = /^\s*(상담사|상담원|에이전트|agent)\s*[:：]/i;
-const CUSTOMER_PREFIX = /^\s*(고객|customer)\s*[:：]/i;
-
-interface SpeakerLine {
-  speaker: Speaker;
-  /** 화자 표기 접두어("상담사:"/"고객:")를 제거한 순수 발화 텍스트. */
-  text: string;
-}
-
-/** "상담사: ..." / "고객: ..." 형태의 줄바꿈 기반 화자 표기를 파싱한다. 미표기 줄은 직전 화자에
- * 귀속되며, 최초 화자가 없으면 'agent'로 간주한다. 반환되는 text는 화자 접두어가 제거된 순수
- * 발화만 담는다(UI에 화자 라벨과 중복 표시되지 않도록). — Phase 1 동작 그대로 유지(FR-3.5). */
-function parseSpeakerLines(text: string): SpeakerLine[] {
-  const lines = text.split(/\r?\n/);
-  const result: SpeakerLine[] = [];
-  let currentSpeaker: Speaker = 'agent';
-
-  for (const line of lines) {
-    if (line.trim().length === 0) continue;
-    let content = line;
-    if (AGENT_PREFIX.test(line)) {
-      currentSpeaker = 'agent';
-      content = line.replace(AGENT_PREFIX, '').trim();
-    } else if (CUSTOMER_PREFIX.test(line)) {
-      currentSpeaker = 'customer';
-      content = line.replace(CUSTOMER_PREFIX, '').trim();
-    }
-    result.push({ speaker: currentSpeaker, text: content });
-  }
-  return result;
 }
 
 interface TokenMatch {
@@ -176,33 +145,13 @@ function maskLineProfanity(text: string): { changed: boolean; text: string } {
   return { changed, text: outParts.join('') };
 }
 
-/** 문장 종결 부호(`. ! ?`, 연속 포함) 기준으로 한 줄(화자 발화 전체)을 문장 단위로 분리한다.
- * 종결 부호는 직전 문장에 포함시켜 반환하며(중복/누락 없이 원문을 그대로 재구성 가능), 부호가
- * 전혀 없는 구어체 발화는 줄 전체가 문장 하나로 그대로 반환된다(기존 동작과 동일 — 회귀 없음).
- * 완벽한 자연어 문장 분리기가 아니라 "욕설이 포함된 문장만 노출"을 위한 실용적 근사치다.
- *
- * L-1(리뷰 정리): "3.5만원"처럼 숫자와 숫자 사이의 마침표는 문장 종결이 아니라 소수점이다.
- * 이를 종결부호로 오인하면 "고객: 요금이 3.5만원인데 씨발 뭐야"가 "5만원인데 ***"처럼 숫자
- * 중간에서 잘린 문장이 화면에 노출된다(탐지 자체는 맞지만 표시 품질 저하). 앞뒤가 모두 숫자인
- * "."만 제외하도록 lookbehind/lookahead를 적용한다("!"/"?"는 이런 숫자 문맥이 없으므로 그대로
- * 둔다). 마침표가 아닌 다른 종결부호와 연속으로 섞여도(예: "3.5!"의 "!") 정상적으로 종결로
- * 인식된다 — 제외되는 것은 숫자 사이 "."뿐이다. */
-function splitIntoSentences(text: string): string[] {
-  const TERMINATOR_PATTERN = /(?:(?<!\d)\.(?!\d)|[!?])+/g;
-  const sentences: string[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = TERMINATOR_PATTERN.exec(text)) !== null) {
-    const end = match.index + match[0].length;
-    sentences.push(text.slice(lastIndex, end));
-    lastIndex = end;
-  }
-  if (lastIndex < text.length) {
-    sentences.push(text.slice(lastIndex));
-  }
-
-  return sentences;
+/** `pii-detection.ts` 재사용 전용: 한 문장에 비속어가 섞여 있으면 함께 `***` 처리한다. PII
+ * placeholder가 포함된 문장을 화면에 보여줄 때, 그 문장에 우연히 욕설도 함께 있으면 원문
+ * 욕설이 그대로 노출되는 것을 막기 위함이다(비속어 배지와 동일하게 "화면에 원문 욕설을 남기지
+ * 않는다"는 원칙을 PII 배지에도 동일하게 적용). PII 자체의 마스킹 여부에는 영향을 주지 않는다
+ * (PII는 이미 mask.ts에서 placeholder로 치환되어 있음). */
+export function maskProfanityInSentence(text: string): string {
+  return maskLineProfanity(text).text;
 }
 
 /** L-3(리뷰 정리): 문장 단위 출력으로 전환되면서, 문장부호가 비정상적으로 밀집된 입력에서는
