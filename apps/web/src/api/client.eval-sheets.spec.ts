@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { ApiError, UploadValidationError, downloadEvalSheets, resetEvalSheet, uploadEvalSheets } from './client';
+import { ApiError, UploadValidationError, downloadEvalSheet, downloadEvalSheets, resetEvalSheet, uploadEvalSheets } from './client';
 
 /** client.ts 의 평가시트 관련 순수 로직(fetch 모킹). 컴포넌트 렌더링은 범위 밖. */
 
@@ -49,6 +49,14 @@ describe('eval-sheets client', () => {
       fetchMock.mockResolvedValueOnce(new Response('x', { status: 200 }));
       await downloadEvalSheets();
       expect(a.download).toBe('eval-sheets.xlsx');
+    });
+
+    test('downloadEvalSheet 은 도메인별 경로를 호출하고 헤더가 없으면 도메인ID 파일명을 쓴다', async () => {
+      const a = stubDom();
+      fetchMock.mockResolvedValue(new Response('x', { status: 200 }));
+      await downloadEvalSheet('telecom');
+      expect(String(fetchMock.mock.calls[0][0])).toMatch(/\/eval-sheets\/telecom\/download$/);
+      expect(a.download).toBe('telecom.xlsx');
     });
 
     test('잘못된 퍼센트 인코딩이면 일반 filename 으로 대체한다', async () => {

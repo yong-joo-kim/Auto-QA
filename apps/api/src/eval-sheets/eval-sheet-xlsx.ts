@@ -418,7 +418,7 @@ function tabName(ordinal: number, domainName: string): string {
 }
 
 /** 현재 유효 평가시트들로 원본 양식과 동일한 구조의 xlsx 버퍼를 생성한다. */
-export async function buildEvalSheetWorkbook(sheets: EvalSheet[]): Promise<Buffer> {
+export async function buildEvalSheetWorkbook(sheets: EvalSheet[], ordinals?: number[]): Promise<Buffer> {
   const wb = new ExcelJS.Workbook();
 
   const guide = wb.addWorksheet('00_안내');
@@ -440,7 +440,7 @@ export async function buildEvalSheetWorkbook(sheets: EvalSheet[]): Promise<Buffe
   });
 
   sheets.forEach((sheet, idx) => {
-    const ws = wb.addWorksheet(tabName(idx + 1, sheet.domainName));
+    const ws = wb.addWorksheet(tabName(ordinals?.[idx] ?? idx + 1, sheet.domainName));
     ws.columns = [{ width: 14 }, { width: 38 }, { width: 70 }, { width: 8 }, { width: 11 }, { width: 10 }, { width: 14 }];
 
     ws.getCell('A1').value = `${sheet.domainName} 상담사 평가시트`;

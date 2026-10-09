@@ -213,10 +213,19 @@ function filenameFromDisposition(header: string | null): string | undefined {
 }
 
 /** 평가시트를 fetch로 받아 Blob 저장한다. 실패하면 ApiError를 던져 화면에서 안내할 수 있게 한다. */
-export async function downloadEvalSheets(): Promise<void> {
+export function downloadEvalSheets(): Promise<void> {
+  return downloadXlsx(EVAL_SHEETS_DOWNLOAD_URL, 'eval-sheets.xlsx');
+}
+
+/** 단일 도메인 평가시트(보기 화면)를 xlsx로 저장한다. */
+export function downloadEvalSheet(domainId: string): Promise<void> {
+  return downloadXlsx(`${API_BASE_URL}/eval-sheets/${encodeURIComponent(domainId)}/download`, `${domainId}.xlsx`);
+}
+
+async function downloadXlsx(downloadUrl: string, fallbackName: string): Promise<void> {
   let response: Response;
   try {
-    response = await fetch(EVAL_SHEETS_DOWNLOAD_URL);
+    response = await fetch(downloadUrl);
   } catch {
     throw new ApiError('서버에 연결할 수 없습니다. 네트워크 상태를 확인해 주세요.', 'network');
   }
@@ -229,7 +238,7 @@ export async function downloadEvalSheets(): Promise<void> {
     );
   }
   const blob = await response.blob();
-  const filename = filenameFromDisposition(response.headers.get('Content-Disposition')) ?? 'eval-sheets.xlsx';
+  const filename = filenameFromDisposition(response.headers.get('Content-Disposition')) ?? fallbackName;
   const url = URL.createObjectURL(blob);
   try {
     const a = document.createElement('a');

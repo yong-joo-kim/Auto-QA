@@ -39,6 +39,17 @@ export class EvalSheetsController {
     res.send(buffer);
   }
 
+  /** 단일 도메인 평가시트 다운로드 (보기 화면용). `:domainId` 상세 조회보다 경로가 깊어 충돌하지 않는다. */
+  @Get(':domainId/download')
+  async downloadOne(@Param('domainId') domainId: string, @Res() res: Response): Promise<void> {
+    const { buffer, domainName } = await this.evalSheets.exportDomainWorkbook(domainId);
+    const fileName = `${domainName}_상담사_평가시트.xlsx`;
+    res.setHeader('Content-Type', XLSX_MIME);
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`);
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+    res.send(buffer);
+  }
+
   /** 'download'보다 뒤에 선언해야 경로가 가려지지 않는다. */
   @Get(':domainId')
   detail(@Param('domainId') domainId: string): EvalSheet {

@@ -100,6 +100,16 @@ export class EvalSheetsService {
   }
 
   /**
+   * 단일 도메인 평가시트를 xlsx로 생성. 탭 번호는 전체 10종 기준 순번을 유지해
+   * 다운로드한 파일을 그대로 업로드해도 같은 도메인으로 인식된다.
+   */
+  exportDomainWorkbook(domainId: string): Promise<{ buffer: Buffer; domainName: string }> {
+    const sheet = this.getSheetDetail(domainId);
+    const ordinal = listSupportedDomainIds().indexOf(domainId) + 1;
+    return buildEvalSheetWorkbook([sheet], [ordinal]).then((buffer) => ({ buffer, domainName: sheet.domainName }));
+  }
+
+  /**
    * xlsx 업로드 반영. 모든 탭을 먼저 검증하고, 오류가 하나라도 있으면 아무것도 반영하지 않는다(all-or-nothing).
    * 저장 단계도 도메인 간 원자적으로 처리되며(실패 시 롤백), 호출은 직렬화된다.
    */

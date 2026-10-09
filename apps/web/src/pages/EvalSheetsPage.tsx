@@ -1,5 +1,6 @@
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import {
+  downloadEvalSheet,
   downloadEvalSheets,
   getEvalSheetDetail,
   listEvalSheets,
@@ -16,6 +17,21 @@ const EvalSheetDetailPanel = forwardRef<
   HTMLElement,
   { sheet: EvalSheetDetail; onClose: () => void }
 >(function EvalSheetDetailPanel({ sheet, onClose }, ref) {
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string>();
+
+  async function onDownload() {
+    setDownloading(true);
+    setDownloadError(undefined);
+    try {
+      await downloadEvalSheet(sheet.domainId);
+    } catch (e) {
+      setDownloadError(e instanceof Error ? e.message : '평가시트를 다운로드하지 못했습니다.');
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   return (
     <section ref={ref} className="sheet-detail" aria-label={`${sheet.domainName} 평가시트 정의`}>
       <div className="sheet-detail-header">
@@ -26,10 +42,20 @@ const EvalSheetDetailPanel = forwardRef<
             {sheet.mainConsultationTypes ? ` · 주요 상담 유형: ${sheet.mainConsultationTypes}` : ''}
           </p>
         </div>
-        <button type="button" className="sheets-view-btn" onClick={onClose}>
-          닫기
-        </button>
+        <div className="sheets-row-actions">
+          <button type="button" className="sheets-view-btn" disabled={downloading} onClick={() => void onDownload()}>
+            {downloading ? '다운로드 중…' : '다운로드 (.xlsx)'}
+          </button>
+          <button type="button" className="sheets-view-btn" onClick={onClose}>
+            닫기
+          </button>
+        </div>
       </div>
+      {downloadError && (
+        <div className="field-error" role="alert">
+          {downloadError}
+        </div>
+      )}
 
       <div className="sheet-detail-scroll">
         <table className="sheets-table sheet-detail-table">
