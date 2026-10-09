@@ -1,4 +1,3 @@
-import { createHash } from 'crypto';
 import * as ExcelJS from 'exceljs';
 import {
   EvalSheet,
@@ -125,21 +124,14 @@ function sheetOrdinal(sheetName: string): number | undefined {
 }
 
 /**
- * 새 버전 문자열: `<major>.<minor>.<patch+1>+<내용해시 8자리>`.
- * patch는 현재 버전과 이력 최대값 중 큰 쪽에서 증가시켜 복원 후 재업로드해도 같은 번호가 나오지 않게 하고(M-2),
- * 내용 해시를 붙여 동시 업로드로 patch가 같아져도 서로 다른 기준은 서로 다른 버전으로 식별되게 한다.
+ * 새 버전 문자열: `<major>.<minor>.<patch+1>`.
+ * patch는 현재 버전과 이력 최대값 중 큰 쪽에서 증가시켜, 기본값 복원 후 재업로드해도 같은 번호가 나오지 않게 한다(M-2).
+ * 업로드/복원은 서비스에서 직렬화되므로 번호만으로 개정판이 구분된다.
  */
-function nextVersion(baseVersion: string, historyMaxPatch: number, hash: string): string {
+function nextVersion(baseVersion: string, historyMaxPatch: number): string {
   const m = /^(\d+)\.(\d+)\.(\d+)/.exec(baseVersion);
-  if (!m) return `${baseVersion}-custom+${hash}`;
-  return `${m[1]}.${m[2]}.${Math.max(Number(m[3]), historyMaxPatch) + 1}+${hash}`;
-}
-
-function contentHash(sheet: EvalSheet): string {
-  return createHash('sha256')
-    .update(JSON.stringify({ ...sheet, version: undefined }))
-    .digest('hex')
-    .slice(0, 8);
+  if (!m) return `${baseVersion}-custom`;
+  return `${m[1]}.${m[2]}.${Math.max(Number(m[3]), historyMaxPatch) + 1}`;
 }
 
 function parseDomainSheet(
@@ -349,7 +341,7 @@ function parseDomainSheet(
     totalMaxScore,
     categories: builtCategories,
   };
-  candidate.version = nextVersion(base.version, history.maxPatch, contentHash(candidate));
+  candidate.version = nextVersion(base.version, history.maxPatch);
   const check = evalSheetSchema.safeParse(candidate);
   if (!check.success) {
     for (const issue of check.error.issues) errors.push(`${label} ${issue.message}`);

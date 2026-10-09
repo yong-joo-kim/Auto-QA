@@ -111,20 +111,9 @@ describe('M-2 버전 라벨 유일성', () => {
     await service.resetToDefault('telecom');
     const second = await service.importWorkbook(await modify(base, (wb) => { tab(wb, '3_').getCell('B8').value = 'B안'; }));
 
-    expect(first.updated[0].version).toMatch(/^1\.0\.1\+[0-9a-f]{8}$/);
-    expect(second.updated[0].version).toMatch(/^1\.0\.2\+[0-9a-f]{8}$/);
+    expect(first.updated[0].version).toBe('1.0.1');
+    expect(second.updated[0].version).toBe('1.0.2');
     expect(second.updated[0].version).not.toBe(first.updated[0].version);
-  });
-
-  test('같은 기반에서 나온 서로 다른 내용은 patch가 같아도 해시로 구분된다', async () => {
-    const base = await exportSeedBuffer();
-    const a = await parseEvalSheetWorkbook(await modify(base, (wb) => { tab(wb, '3_').getCell('B8').value = 'A안'; }), domainIds, loadSeed);
-    const b = await parseEvalSheetWorkbook(await modify(base, (wb) => { tab(wb, '3_').getCell('B8').value = 'B안'; }), domainIds, loadSeed);
-    const va = a.parsed.find((p) => p.domainId === 'telecom')!.sheet.version;
-    const vb = b.parsed.find((p) => p.domainId === 'telecom')!.sheet.version;
-
-    expect(va.split('+')[0]).toBe(vb.split('+')[0]);
-    expect(va).not.toBe(vb);
   });
 
   test('동시에 들어온 두 업로드는 직렬화되어 두 번째가 첫 번째 결과를 기반으로 반영된다', async () => {
@@ -135,8 +124,8 @@ describe('M-2 버전 라벨 유일성', () => {
 
     const [a, b] = await Promise.all([service.importWorkbook(bufA), service.importWorkbook(bufB)]);
 
-    expect(a.updated[0].version).toMatch(/^1\.0\.1\+/);
-    expect(b.updated[0].version).toMatch(/^1\.0\.2\+/);
+    expect(a.updated[0].version).toBe('1.0.1');
+    expect(b.updated[0].version).toBe('1.0.2');
     expect(service.getSheet('telecom').categories[0].items[0].itemName).toBe('B안');
     expect(fs.readdirSync(dir).filter((f) => f.endsWith('.tmp'))).toEqual([]);
   });

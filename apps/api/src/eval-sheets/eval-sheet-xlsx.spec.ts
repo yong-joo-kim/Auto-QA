@@ -53,7 +53,7 @@ describe('평가시트 xlsx 입출력', () => {
     expect(telecom.categories[0].items[1]).toMatchObject({ itemId: 'basic-response-02', maxScore: 6, gating: true });
     expect(telecom.categories[0].maxScore).toBe(15);
     expect(telecom.totalMaxScore).toBe(100);
-    expect(telecom.version).toMatch(/^1\.0\.1\+[0-9a-f]{8}$/);
+    expect(telecom.version).toMatch(/^1\.0\.1$/);
   });
 
   test('항목명을 바꾸면 신규 itemId가 채번되고 신규 구분도 허용된다', async () => {
@@ -118,7 +118,7 @@ describe('EvalSheetsService 업로드 반영(override)', () => {
     expect(res.updated.map((u) => u.domainId)).toEqual(['telecom']);
     expect(service.getSheet('telecom').categories[0].items[0].itemName).toBe('사용자 수정 항목');
     expect(service.getSheet('insurance')).toEqual(loadSeed('insurance'));
-    expect(service.list().find((s) => s.domainId === 'telecom')).toMatchObject({ customized: true, version: expect.stringMatching(/^1\.0\.1\+[0-9a-f]{8}$/) });
+    expect(service.list().find((s) => s.domainId === 'telecom')).toMatchObject({ customized: true, version: expect.stringMatching(/^1\.0\.1$/) });
 
     // 다시 다운로드하면 수정본이 담기고, 초기화하면 seed로 복귀
     const reparsed = await parseEvalSheetWorkbook(await service.exportWorkbook(), domainIds, (id) => service.getSheet(id));
